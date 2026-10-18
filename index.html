@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Discover local services in Islamabad with KaamNearby.">
+  <meta name="description" content="Discover local services in Islamabad and try a prototype provider listing form with call and WhatsApp links.">
   <title>KaamNearby | Find Local Services in Islamabad</title>
   <style>
     :root {
@@ -90,6 +90,23 @@
     .modal p { color: var(--muted); line-height: 1.6; }
     .modal-actions { display: flex; justify-content: end; gap: 10px; margin-top: 20px; }
     .secondary-btn { padding: 11px 15px; background: #edf2f5; border-radius: 10px; color: var(--ink); font-weight: 750; }
+
+    .provider-form-wrap { background: white; border: 1px solid var(--line); border-radius: 18px; padding: 24px; box-shadow: var(--shadow); }
+    .provider-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .field { display: grid; gap: 6px; }
+    .field.full { grid-column: 1 / -1; }
+    .field label { font-size: .88rem; font-weight: 750; color: var(--navy); }
+    .field input, .field select, .field textarea { width: 100%; border: 1px solid #cfdce2; border-radius: 10px; padding: 12px; font: inherit; color: var(--ink); background: white; }
+    .field textarea { min-height: 92px; resize: vertical; }
+    .form-note { color: var(--muted); font-size: .86rem; line-height: 1.55; }
+    .form-status { padding: 12px 14px; border-radius: 10px; margin-top: 14px; display: none; line-height: 1.5; }
+    .form-status.show { display: block; }
+    .form-status.success { background: #e8f7ef; color: #17633a; }
+    .form-status.error { background: #fff0ef; color: #8b2e26; }
+    .contact-link { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; padding: 11px 14px; border-radius: 10px; background: var(--teal); color: white; font-weight: 800; }
+    .contact-link.whatsapp { background: #16864a; }
+    .contact-link[hidden] { display: none; }
+    .modal-actions { flex-wrap: wrap; }
     @media (max-width: 850px) {
       .hero-grid { grid-template-columns: 1fr; }
       .hero-art { display: none; }
@@ -106,6 +123,8 @@
       .search-box .primary-btn { width: 100%; }
       .categories { grid-template-columns: repeat(2, 1fr); }
       .cards, .how-grid { grid-template-columns: 1fr; }
+      .provider-form { grid-template-columns: 1fr; }
+      .field.full { grid-column: auto; }
       .section-head, .listing-toolbar, .footer-row { align-items: start; flex-direction: column; }
       .listing-toolbar select { width: 100%; }
     }
@@ -180,7 +199,60 @@
           </select>
         </div>
         <div class="cards" id="providerCards"></div>
-        <div class="notice"><strong>Demo notice:</strong> These are fictional example listings, not real or verified providers. Before launch, replace them with providers who have agreed to be listed, and confirm their details.</div>
+        <div class="notice"><strong>Prototype notice:</strong> Built-in examples are fictional and unverified. Listings added through the form are saved only in this browser on this device, not to a shared database. Verify provider identity and get permission before publishing their contact details.</div>
+      </div>
+    </section>
+
+
+    <section id="add-provider">
+      <div class="container">
+        <div class="section-head">
+          <div><h2>List your service</h2><p>Are you a local provider? Add a sample listing to try the directory.</p></div>
+        </div>
+        <div class="provider-form-wrap">
+          <form class="provider-form" id="providerForm">
+            <div class="field">
+              <label for="providerName">Provider or business name *</label>
+              <input id="providerName" name="providerName" required maxlength="70" placeholder="e.g. Ahmed Electrician">
+            </div>
+            <div class="field">
+              <label for="providerType">Service type *</label>
+              <input id="providerType" name="providerType" required maxlength="60" placeholder="e.g. Electrician">
+            </div>
+            <div class="field">
+              <label for="providerCategory">Category *</label>
+              <select id="providerCategory" name="providerCategory" required>
+                <option value="">Choose a category</option>
+                <option>Home repairs</option><option>Cleaning</option><option>Education</option>
+                <option>Beauty</option><option>Technology</option><option>Moving</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="providerArea">Area *</label>
+              <select id="providerArea" name="providerArea" required>
+                <option value="">Choose an area</option>
+                <option>F-6</option><option>F-7</option><option>F-10</option><option>G-9</option><option>I-8</option><option>Bahria Town</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="providerPhone">Phone number *</label>
+              <input id="providerPhone" name="providerPhone" type="tel" required maxlength="24" placeholder="e.g. 03XX XXXXXXX">
+            </div>
+            <div class="field">
+              <label for="providerWhatsapp">WhatsApp number (optional)</label>
+              <input id="providerWhatsapp" name="providerWhatsapp" type="tel" maxlength="24" placeholder="Leave blank to use phone number">
+            </div>
+            <div class="field full">
+              <label for="providerDescription">Short description *</label>
+              <textarea id="providerDescription" name="providerDescription" required maxlength="220" placeholder="Describe your service and the work you do."></textarea>
+            </div>
+            <div class="field full">
+              <button class="primary-btn" type="submit">Add my listing</button>
+              <p class="form-note">Prototype note: listings you add are saved only in this browser on this device. They are not sent to a server and will not automatically appear for other visitors. Only submit contact details with the provider's permission.</p>
+              <div class="form-status" id="formStatus" role="status" aria-live="polite"></div>
+            </div>
+          </form>
+        </div>
       </div>
     </section>
 
@@ -206,15 +278,19 @@
   <div class="modal-backdrop" id="demoModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal">
       <h3 id="modalTitle">Demo provider</h3>
-      <p>This is a sample listing, so it doesn't have a real contact number yet. When you launch, add contact details only for providers who have agreed to be listed.</p>
-      <div class="modal-actions"><button class="secondary-btn" id="closeModal">Close</button></div>
+      <p id="modalMessage">This is a sample listing, so it doesn't have a real contact number yet.</p>
+      <div class="modal-actions">
+        <a class="contact-link" id="callProvider" href="#" hidden>Call provider</a>
+        <a class="contact-link whatsapp" id="whatsappProvider" href="#" target="_blank" rel="noopener noreferrer" hidden>WhatsApp</a>
+        <button class="secondary-btn" id="closeModal" type="button">Close</button>
+      </div>
     </div>
   </div>
 
   <script>
     // These fictional records are only for testing the prototype.
     // Replace them with real providers only after getting their permission.
-    const providers = [
+    const demoProviders = [
       { name: "Spark Home Repairs", type: "Electrician", category: "Home repairs", area: "F-10", icon: "⚡", description: "Example listing for household electrical repairs and basic troubleshooting." },
       { name: "PipeCare Services", type: "Plumber", category: "Home repairs", area: "G-9", icon: "🔧", description: "Example listing for tap repairs, leaks, and general plumbing work." },
       { name: "CoolAir AC Support", type: "AC technician", category: "Home repairs", area: "F-7", icon: "❄️", description: "Example listing for air-conditioner maintenance and servicing." },
@@ -225,6 +301,18 @@
       { name: "Glow & Go Studio", type: "Beauty services", category: "Beauty", area: "F-7", icon: "💇", description: "Example listing for appointment-based personal grooming services." },
       { name: "FixRight Handyman", type: "Handyman", category: "Home repairs", area: "G-9", icon: "🪛", description: "Example listing for small household fixes and installations." }
     ];
+
+    const STORAGE_KEY = "kaamnearby-local-providers-v1";
+    function loadSavedProviders() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        return Array.isArray(saved) ? saved : [];
+      } catch (error) {
+        return [];
+      }
+    }
+    let savedProviders = loadSavedProviders();
+    let providers = [...demoProviders, ...savedProviders];
 
     const cards = document.getElementById("providerCards");
     const searchInput = document.getElementById("searchInput");
@@ -252,7 +340,7 @@
 
       cards.innerHTML = filtered.map((provider, index) => `
         <article class="service-card">
-          <div class="card-top"><div class="service-icon" aria-hidden="true">${provider.icon}</div><span class="demo-tag">DEMO LISTING</span></div>
+          <div class="card-top"><div class="service-icon" aria-hidden="true">${provider.icon || "🛠️"}</div><span class="demo-tag">${provider.isLocal ? "LOCAL TEST LISTING" : "DEMO LISTING"}</span></div>
           <h3>${escapeHtml(provider.name)}</h3>
           <p class="service-type">${escapeHtml(provider.type)}</p>
           <p class="service-desc">${escapeHtml(provider.description)}</p>
@@ -272,10 +360,98 @@
       if (!provider) return;
 
       document.getElementById("modalTitle").textContent = provider.name;
-      const modalMessage = modal.querySelector("p");
-      modalMessage.textContent = `${provider.type} · ${provider.area}, Islamabad. This is a demo listing, so no real phone number or booking service is connected yet.`;
+      const modalMessage = document.getElementById("modalMessage");
+      const callLink = document.getElementById("callProvider");
+      const whatsappLink = document.getElementById("whatsappProvider");
+      const phone = (provider.phone || "").trim();
+      const whatsapp = (provider.whatsapp || phone).trim();
+
+      if (phone) {
+        modalMessage.textContent = `${provider.type} · ${provider.area}, Islamabad. Contact this provider directly. Please confirm service details and pricing before booking.`;
+        callLink.href = `tel:${phone.replace(/[^+\d]/g, "")}`;
+        callLink.hidden = false;
+      } else {
+        modalMessage.textContent = `${provider.type} · ${provider.area}, Islamabad. This is a fictional demo listing, so no real phone number or booking service is connected yet.`;
+        callLink.hidden = true;
+        callLink.removeAttribute("href");
+      }
+
+      const waNumber = normalizeWhatsAppNumber(whatsapp);
+      if (waNumber) {
+        whatsappLink.href = `https://wa.me/${waNumber}`;
+        whatsappLink.hidden = false;
+      } else {
+        whatsappLink.hidden = true;
+        whatsappLink.removeAttribute("href");
+      }
       modal.classList.add("open");
       document.getElementById("closeModal").focus();
+    });
+
+    function normalizeWhatsAppNumber(value) {
+      let digits = String(value || "").replace(/\D/g, "");
+      if (!digits) return "";
+      // Convert common Pakistani mobile format 03XXXXXXXXX to 923XXXXXXXXX.
+      if (digits.startsWith("0") && digits.length === 11) digits = "92" + digits.slice(1);
+      // Accept a local 10-digit mobile number missing its leading zero.
+      else if (digits.length === 10 && digits.startsWith("3")) digits = "92" + digits;
+      // Remove international dialing prefix if someone enters 0092...
+      if (digits.startsWith("0092")) digits = digits.slice(2);
+      return digits.length >= 10 ? digits : "";
+    }
+
+    document.getElementById("providerForm").addEventListener("submit", event => {
+      event.preventDefault();
+      const status = document.getElementById("formStatus");
+      const phone = document.getElementById("providerPhone").value.trim();
+      const whatsapp = document.getElementById("providerWhatsapp").value.trim();
+      if (normalizeWhatsAppNumber(phone).length < 10) {
+        status.className = "form-status show error";
+        status.textContent = "Please enter a valid phone number, for example 03XX XXXXXXX.";
+        return;
+      }
+      if (whatsapp && !normalizeWhatsAppNumber(whatsapp)) {
+        status.className = "form-status show error";
+        status.textContent = "Please enter a valid WhatsApp number or leave that field blank.";
+        return;
+      }
+
+      const provider = {
+        name: document.getElementById("providerName").value.trim(),
+        type: document.getElementById("providerType").value.trim(),
+        category: document.getElementById("providerCategory").value,
+        area: document.getElementById("providerArea").value,
+        phone,
+        whatsapp: whatsapp || phone,
+        description: document.getElementById("providerDescription").value.trim(),
+        icon: "🛠️",
+        isLocal: true
+      };
+      if (!provider.name || !provider.type || !provider.category || !provider.area || !provider.description) {
+        status.className = "form-status show error";
+        status.textContent = "Please complete all required fields.";
+        return;
+      }
+
+      savedProviders = [...savedProviders, provider];
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(savedProviders));
+      } catch (error) {
+        status.className = "form-status show error";
+        status.textContent = "This browser could not save the listing. Check your browser settings and try again.";
+        return;
+      }
+
+      providers = [...demoProviders, ...savedProviders];
+      selectedCategory = "";
+      categoryButtons.forEach(item => item.classList.remove("active"));
+      searchInput.value = "";
+      areaFilter.value = "";
+      renderProviders();
+      event.target.reset();
+      status.className = "form-status show success";
+      status.textContent = "Listing added in this browser! You can now find it in the provider list and test its Call and WhatsApp buttons. This listing is not shared with other visitors yet.";
+      document.getElementById("providerCards").scrollIntoView({ behavior: "smooth", block: "start" });
     });
 
     function escapeHtml(value) {
