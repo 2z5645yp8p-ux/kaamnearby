@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#12372d">
   <meta name="description" content="Discover local services in Islamabad and try a prototype provider listing form with call and WhatsApp links.">
   <title>KaamNearby | Find Local Services in Islamabad</title>
   <style>
@@ -128,6 +129,100 @@
       .section-head, .listing-toolbar, .footer-row { align-items: start; flex-direction: column; }
       .listing-toolbar select { width: 100%; }
     }
+
+    /* KaamNearby polished marketplace refresh */
+    :root {
+      --navy: #12372d;
+      --teal: #16845b;
+      --teal-dark: #116747;
+      --mint: #e8f6ed;
+      --ink: #1d3029;
+      --muted: #66766e;
+      --line: #e2ebe5;
+      --bg: #f7faf7;
+      --shadow: 0 14px 38px rgba(18, 55, 45, .09);
+    }
+    body { background: #f7faf7; }
+    header { position: sticky; top: 0; z-index: 5; backdrop-filter: blur(14px); background: rgba(255,255,255,.94); }
+    .nav { min-height: 72px; }
+    .brand { font-size: 1.32rem; }
+    .brand-mark { background: linear-gradient(145deg, #16845b, #0f6042); box-shadow: 0 7px 15px rgba(22,132,91,.2); }
+    .hero { padding: 62px 0 48px; background: radial-gradient(circle at 86% 18%, #d7f1df 0, transparent 31%), linear-gradient(135deg, #f0faf2 0%, #f8fbf8 68%); }
+    .eyebrow { letter-spacing: .01em; }
+    h1 { max-width: 660px; font-size: clamp(2.55rem, 5.5vw, 4.5rem); }
+    .hero p { font-size: 1.05rem; }
+    .search-box { border-radius: 18px; padding: 7px; }
+    .search-box:focus-within { border-color: #8dc9a8; box-shadow: 0 0 0 4px rgba(22,132,91,.09), var(--shadow); }
+    .primary-btn { background: linear-gradient(135deg, #16845b, #116747); box-shadow: 0 7px 15px rgba(22,132,91,.14); }
+    .primary-btn:hover { background: #0e6545; }
+    .art-card { border-radius: 26px; border-color: #e1eee4; transform: rotate(1deg); }
+    section { padding: 42px 0; }
+    .section-head { margin-bottom: 24px; }
+    .section-head h2 { font-size: clamp(1.55rem, 3vw, 2.15rem); }
+    .category { border-radius: 18px; padding: 19px 12px; box-shadow: 0 4px 14px rgba(18,55,45,.025); }
+    .category:hover, .category.active { border-color: #83c6a0; background: #eaf7ee; transform: translateY(-2px); }
+    .category .emoji { width: 48px; height: 48px; margin: 0 auto 10px; display: grid; place-items: center; border-radius: 16px; background: #f0f8f2; }
+    .service-card { border-radius: 20px; padding: 21px; box-shadow: 0 5px 20px rgba(18,55,45,.035); transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+    .service-card:hover { transform: translateY(-3px); border-color: #c8e2d0; box-shadow: 0 13px 28px rgba(18,55,45,.08); }
+    .service-icon { background: #eaf7ee; }
+    .service-card h3 { letter-spacing: -.02em; }
+    .card-btn { background: #eaf7ee; color: #116747; padding: 12px; }
+    .card-btn:hover { background: #d8efdf; }
+    .provider-form-wrap { border-radius: 22px; padding: 28px; }
+    .field input:focus, .field select:focus, .field textarea:focus { outline: 3px solid rgba(22,132,91,.12); border-color: #70b98e; }
+    .how-card { border-radius: 20px; }
+    .step { background: #16845b; border-radius: 13px; }
+    footer { background: #12372d; }
+    .contact-link { background: #16845b; }
+    .contact-link.whatsapp { background: #16864a; }
+    .mobile-nav { display: none; }
+    .section-anchor { scroll-margin-top: 92px; }
+    @media (max-width: 850px) {
+      .hero { padding-top: 46px; }
+      .hero-grid { gap: 20px; }
+      .cards { gap: 13px; }
+    }
+    @media (max-width: 560px) {
+      body { padding-bottom: 74px; }
+      .container { width: min(100% - 28px, 1120px); }
+      .nav { min-height: 62px; }
+      .brand { font-size: 1.14rem; }
+      .brand-mark { width: 35px; height: 35px; border-radius: 11px; }
+      .pill { padding: 7px 9px; font-size: .73rem; }
+      .hero { padding: 32px 0 27px; }
+      h1 { font-size: clamp(2.35rem, 11vw, 3.2rem); line-height: 1.04; margin: 16px 0 13px; }
+      .hero p { font-size: .98rem; line-height: 1.62; margin-bottom: 19px; }
+      .search-box { gap: 6px; padding: 7px; }
+      .search-box input { min-height: 46px; font-size: 16px; }
+      .search-box .primary-btn { min-height: 46px; }
+      section { padding: 30px 0; }
+      .section-head { margin-bottom: 17px; }
+      .section-head p { font-size: .9rem; line-height: 1.5; }
+      .categories { gap: 10px; }
+      .category { padding: 14px 8px; min-height: 104px; }
+      .category .emoji { width: 42px; height: 42px; font-size: 1.4rem; border-radius: 14px; }
+      .category span:last-child { font-size: .82rem; }
+      .listing-toolbar { gap: 10px; }
+      .cards { grid-template-columns: 1fr; gap: 12px; }
+      .service-card { min-height: unset; padding: 18px; }
+      .service-card h3 { margin-top: 12px; }
+      .provider-form-wrap { padding: 18px; border-radius: 18px; }
+      .provider-form { gap: 13px; }
+      .field input, .field select, .field textarea { font-size: 16px; }
+      .how-grid { gap: 12px; }
+      .how-card { padding: 18px; }
+      .notice { font-size: .82rem; }
+      .footer-row { gap: 12px; }
+      .mobile-nav { position: fixed; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; left: 10px; right: 10px; bottom: max(10px, env(safe-area-inset-bottom)); z-index: 8; padding: 8px 6px; border: 1px solid rgba(220,232,224,.95); border-radius: 18px; background: rgba(255,255,255,.96); box-shadow: 0 10px 35px rgba(18,55,45,.16); backdrop-filter: blur(18px); }
+      .mobile-nav a { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 3px; min-height: 48px; color: #5e7167; font-size: .7rem; font-weight: 750; text-decoration: none; border-radius: 12px; }
+      .mobile-nav a span:first-child { font-size: 1.1rem; line-height: 1.2; }
+      .mobile-nav a:hover, .mobile-nav a:focus-visible { color: #116747; background: #eaf7ee; outline: none; }
+      .modal { padding: 20px; }
+      .modal-actions { justify-content: stretch; }
+      .modal-actions > * { flex: 1; text-align: center; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }
+
   </style>
 </head>
 <body>
@@ -165,7 +260,7 @@
       </div>
     </section>
 
-    <section>
+    <section id="browse" class="section-anchor">
       <div class="container">
         <div class="section-head">
           <div><h2>Browse by category</h2><p>Choose the kind of help you need.</p></div>
@@ -181,7 +276,7 @@
       </div>
     </section>
 
-    <section style="padding-top: 12px;">
+    <section id="providers" class="section-anchor" style="padding-top: 12px;">
       <div class="container">
         <div class="section-head">
           <div><h2>Explore local providers</h2><p>Demo listings show how your directory will look.</p></div>
@@ -204,7 +299,7 @@
     </section>
 
 
-    <section id="add-provider">
+    <section id="add-provider" class="section-anchor">
       <div class="container">
         <div class="section-head">
           <div><h2>List your service</h2><p>Are you a local provider? Add a sample listing to try the directory.</p></div>
@@ -267,6 +362,13 @@
       </div>
     </section>
   </main>
+
+
+  <nav class="mobile-nav" aria-label="Quick navigation">
+    <a href="#browse"><span>⌕</span><span>Explore</span></a>
+    <a href="#providers"><span>▦</span><span>Providers</span></a>
+    <a href="#add-provider"><span>＋</span><span>List service</span></a>
+  </nav>
 
   <footer>
     <div class="container footer-row">
