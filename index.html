@@ -257,18 +257,26 @@
           <p class="service-type">${escapeHtml(provider.type)}</p>
           <p class="service-desc">${escapeHtml(provider.description)}</p>
           <div class="location">📍 ${escapeHtml(provider.area)}, Islamabad</div>
-          <button class="card-btn" type="button" data-provider="${index}">View contact options</button>
+          <button class="card-btn" type="button" data-provider-name="${escapeHtml(provider.name)}">View contact options</button>
         </article>
       `).join("");
 
-      cards.querySelectorAll("[data-provider]").forEach(button => {
-        button.addEventListener("click", () => {
-          document.getElementById("modalTitle").textContent = providers[filtered[Number(button.dataset.provider)]].name;
-          modal.classList.add("open");
-          document.getElementById("closeModal").focus();
-        });
-      });
     }
+
+    // Delegated handler: contact buttons keep working after searches and category filters.
+    cards.addEventListener("click", event => {
+      const button = event.target.closest("[data-provider-name]");
+      if (!button) return;
+
+      const provider = providers.find(item => item.name === button.dataset.providerName);
+      if (!provider) return;
+
+      document.getElementById("modalTitle").textContent = provider.name;
+      const modalMessage = modal.querySelector("p");
+      modalMessage.textContent = `${provider.type} · ${provider.area}, Islamabad. This is a demo listing, so no real phone number or booking service is connected yet.`;
+      modal.classList.add("open");
+      document.getElementById("closeModal").focus();
+    });
 
     function escapeHtml(value) {
       return value.replace(/[&<>"']/g, character => ({
