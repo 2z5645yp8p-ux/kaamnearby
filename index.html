@@ -279,7 +279,7 @@
     <section id="providers" class="section-anchor" style="padding-top: 12px;">
       <div class="container">
         <div class="section-head">
-          <div><h2>Explore local providers</h2><p>Demo listings show how your directory will look.</p></div>
+          <div><h2>Explore local providers</h2><p>Browse example listings and community providers approved for public display.</p></div>
         </div>
         <div class="listing-toolbar">
           <span class="results-count" id="resultsCount" aria-live="polite">Showing providers</span>
@@ -294,7 +294,7 @@
           </select>
         </div>
         <div class="cards" id="providerCards"></div>
-        <div class="notice"><strong>Prototype notice:</strong> Built-in examples are fictional and unverified. Listings added through the form are saved only in this browser on this device, not to a shared database. Verify provider identity and get permission before publishing their contact details.</div>
+        <div class="notice"><strong>Prototype notice:</strong> Built-in examples are fictional and unverified. Community listings are submitted for review before they appear publicly. Verify provider identity and get permission before publishing contact details.</div>
       </div>
     </section>
 
@@ -343,7 +343,7 @@
             </div>
             <div class="field full">
               <button class="primary-btn" type="submit">Add my listing</button>
-              <p class="form-note">Prototype note: listings you add are saved only in this browser on this device. They are not sent to a server and will not automatically appear for other visitors. Only submit contact details with the provider's permission.</p>
+              <p class="form-note">Your submission is sent to KaamNearby for review. It will not appear publicly until approved. Only submit contact details with the provider's permission.</p>
               <div class="form-status" id="formStatus" role="status" aria-live="polite"></div>
             </div>
           </form>
@@ -389,6 +389,7 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // These fictional records are only for testing the prototype.
     // Replace them with real providers only after getting their permission.
@@ -404,6 +405,15 @@
       { name: "FixRight Handyman", type: "Handyman", category: "Home repairs", area: "G-9", icon: "🪛", description: "Example listing for small household fixes and installations." }
     ];
 
+    const SUPABASE_URL = "https://wbhttdwajcdidkioatqn.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_BQee1ylNh02Ii4PaM13Ckg_mlBmgrnc";
+    const supabaseConfigured = SUPABASE_URL.startsWith("https://") &&
+      !SUPABASE_URL.includes("PASTE_") && SUPABASE_PUBLISHABLE_KEY.startsWith("sb_publishable_");
+    const supabaseClient = supabaseConfigured && window.supabase
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
+      : null;
+
+    // Keep any older browser-only test listings on this device, but new submissions go to Supabase.
     const STORAGE_KEY = "kaamnearby-local-providers-v1";
     function loadSavedProviders() {
       try {
@@ -414,6 +424,7 @@
       }
     }
     let savedProviders = loadSavedProviders();
+    let communityProviders = [];
     let providers = [...demoProviders, ...savedProviders];
 
     const cards = document.getElementById("providerCards");
@@ -434,15 +445,15 @@
           (!selectedCategory || provider.category === selectedCategory);
       });
 
-      resultsCount.textContent = `Showing ${filtered.length} demo ${filtered.length === 1 ? "provider" : "providers"}`;
+      resultsCount.textContent = `Showing ${filtered.length} ${filtered.length === 1 ? "provider" : "providers"}`;
       if (!filtered.length) {
-        cards.innerHTML = '<div class="empty"><h3>No matching demo listings</h3><p>Try another keyword, category, or Islamabad area.</p></div>';
+        cards.innerHTML = '<div class="empty"><h3>No matching listings</h3><p>Try another keyword, category, or Islamabad area.</p></div>';
         return;
       }
 
       cards.innerHTML = filtered.map((provider, index) => `
         <article class="service-card">
-          <div class="card-top"><div class="service-icon" aria-hidden="true">${provider.icon || "🛠️"}</div><span class="demo-tag">${provider.isLocal ? "LOCAL TEST LISTING" : "DEMO LISTING"}</span></div>
+          <div class="card-top"><div class="service-icon" aria-hidden="true">${provider.icon || "🛠️"}</div><span class="demo-tag">${provider.isCommunity ? "COMMUNITY LISTING" : provider.isLocal ? "LOCAL TEST LISTING" : "DEMO LISTING"}</span></div>
           <h3>${escapeHtml(provider.name)}</h3>
           <p class="service-type">${escapeHtml(provider.type)}</p>
           <p class="service-desc">${escapeHtml(provider.description)}</p>
@@ -502,11 +513,19 @@
       return digits.length >= 10 ? digits : "";
     }
 
-    document.getElementById("providerForm").addEventListener("submit", event => {
+    document.getElementById("providerForm").addEventListener("submit", async event => {
       event.preventDefault();
+      const form = event.currentTarget;
+      const submitButton = form.querySelector('button[type="submit"]');
       const status = document.getElementById("formStatus");
       const phone = document.getElementById("providerPhone").value.trim();
       const whatsapp = document.getElementById("providerWhatsapp").value.trim();
+
+      if (!supabaseClient) {
+        status.className = "form-status show error";
+        status.textContent = "The online database is not connected yet. Add your Supabase project URL and publishable key in index.html, then publish the website again.";
+        return;
+      }
       if (normalizeWhatsAppNumber(phone).length < 10) {
         status.className = "form-status show error";
         status.textContent = "Please enter a valid phone number, for example 03XX XXXXXXX.";
@@ -520,41 +539,71 @@
 
       const provider = {
         name: document.getElementById("providerName").value.trim(),
-        type: document.getElementById("providerType").value.trim(),
+        service_type: document.getElementById("providerType").value.trim(),
         category: document.getElementById("providerCategory").value,
         area: document.getElementById("providerArea").value,
         phone,
         whatsapp: whatsapp || phone,
         description: document.getElementById("providerDescription").value.trim(),
-        icon: "🛠️",
-        isLocal: true
+        status: "pending"
       };
-      if (!provider.name || !provider.type || !provider.category || !provider.area || !provider.description) {
+      if (!provider.name || !provider.service_type || !provider.category || !provider.area || !provider.description) {
         status.className = "form-status show error";
         status.textContent = "Please complete all required fields.";
         return;
       }
 
-      savedProviders = [...savedProviders, provider];
+      submitButton.disabled = true;
+      submitButton.textContent = "Submitting…";
+      status.className = "form-status show";
+      status.textContent = "Submitting your listing for review…";
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(savedProviders));
+        const { error } = await supabaseClient.from("providers").insert(provider);
+        if (error) throw error;
+        selectedCategory = "";
+        categoryButtons.forEach(item => item.classList.remove("active"));
+        searchInput.value = "";
+        areaFilter.value = "";
+        form.reset();
+        status.className = "form-status show success";
+        status.textContent = "Thank you! Your listing has been submitted for review. It will appear publicly after approval.";
+        document.getElementById("providerCards").scrollIntoView({ behavior: "smooth", block: "start" });
       } catch (error) {
+        console.error("KaamNearby submission error:", error);
         status.className = "form-status show error";
-        status.textContent = "This browser could not save the listing. Check your browser settings and try again.";
-        return;
+        status.textContent = "Sorry, the listing could not be submitted. Please check the database setup and try again.";
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = "Add my listing";
       }
-
-      providers = [...demoProviders, ...savedProviders];
-      selectedCategory = "";
-      categoryButtons.forEach(item => item.classList.remove("active"));
-      searchInput.value = "";
-      areaFilter.value = "";
-      renderProviders();
-      event.target.reset();
-      status.className = "form-status show success";
-      status.textContent = "Listing added in this browser! You can now find it in the provider list and test its Call and WhatsApp buttons. This listing is not shared with other visitors yet.";
-      document.getElementById("providerCards").scrollIntoView({ behavior: "smooth", block: "start" });
     });
+
+    async function loadApprovedProviders() {
+      if (!supabaseClient) return;
+      try {
+        const { data, error } = await supabaseClient
+          .from("providers")
+          .select("id, name, service_type, category, area, phone, whatsapp, description, status")
+          .eq("status", "approved");
+        if (error) throw error;
+        communityProviders = (data || []).map(row => ({
+          id: row.id,
+          name: row.name,
+          type: row.service_type,
+          category: row.category || "Home repairs",
+          area: row.area || "Islamabad",
+          phone: row.phone || "",
+          whatsapp: row.whatsapp || row.phone || "",
+          description: row.description || "",
+          icon: "🛠️",
+          isCommunity: true
+        }));
+        providers = [...demoProviders, ...savedProviders, ...communityProviders];
+        renderProviders();
+      } catch (error) {
+        console.error("KaamNearby load error:", error);
+      }
+    }
 
     function escapeHtml(value) {
       return value.replace(/[&<>"']/g, character => ({
@@ -584,6 +633,7 @@
     document.addEventListener("keydown", event => { if (event.key === "Escape") modal.classList.remove("open"); });
     document.getElementById("year").textContent = new Date().getFullYear();
     renderProviders();
+    loadApprovedProviders();
   </script>
 </body>
 </html>
