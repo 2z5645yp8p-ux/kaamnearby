@@ -476,8 +476,8 @@ function getEstimatedRate(provider) {
         <article class="service-card">
           <div class="card-top"><div class="service-icon" aria-hidden="true">${provider.icon || "🛠️"}</div><span class="demo-tag">${provider.isCommunity ? "COMMUNITY LISTING" : provider.isLocal ? "LOCAL TEST LISTING" : "DEMO LISTING"}</span></div>
           <h3>${escapeHtml(provider.name)}</h3>
-          <p class="service-type">${escapeHtml(provider.type)}</p>
           <p class="service-price">Estimated rate: ${getEstimatedRate(provider)}</p>
+          
           <p class="service-desc">${escapeHtml(provider.description)}</p>
           <div class="location">📍 ${escapeHtml(provider.area)}, Islamabad</div>
           <button class="card-btn" type="button" data-provider-name="${escapeHtml(provider.name)}">View contact options</button>
