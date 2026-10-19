@@ -444,7 +444,7 @@
     const categoryButtons = [...document.querySelectorAll(".category")];
     const modal = document.getElementById("demoModal");
 function getEstimatedRate(provider) {
-  const category = (provider.category || provider.type || "").toLowerCase();
+  const category = `${provider.category || ""} ${provider.type || ""}`.toLowerCase();
 
   if (category.includes("plumb")) return "From Rs 800";
   if (category.includes("electric")) return "From Rs 800";
