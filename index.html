@@ -443,6 +443,17 @@
     const resultsCount = document.getElementById("resultsCount");
     const categoryButtons = [...document.querySelectorAll(".category")];
     const modal = document.getElementById("demoModal");
+function getEstimatedRate(provider) {
+  const category = (provider.category || provider.type || "").toLowerCase();
+
+  if (category.includes("plumb")) return "From Rs 800";
+  if (category.includes("electric")) return "From Rs 800";
+  if (category.includes("ac repair")) return "From Rs 1,500";
+  if (category.includes("carpent")) return "From Rs 1,000";
+  if (category.includes("clean")) return "From Rs 1,000";
+  if (category.includes("paint")) return "Price on request";
+  return "Contact for a quote";
+}
     let selectedCategory = "";
 
     function renderProviders() {
@@ -465,9 +476,8 @@
         <article class="service-card">
           <div class="card-top"><div class="service-icon" aria-hidden="true">${provider.icon || "🛠️"}</div><span class="demo-tag">${provider.isCommunity ? "COMMUNITY LISTING" : provider.isLocal ? "LOCAL TEST LISTING" : "DEMO LISTING"}</span></div>
           <h3>${escapeHtml(provider.name)}</h3>
-<p class="service-price">Estimated rate: ${provider.price ? "Rs " + escapeHtml(String(provider.price)) : "Contact for a quote"}</p>
           <p class="service-type">${escapeHtml(provider.type)}</p>
-          <p class="service-price">Estimated rate: Contact for a quote</p>
+          <p class="service-price">Estimated rate: ${getEstimatedRate(provider)}</p>
           <p class="service-desc">${escapeHtml(provider.description)}</p>
           <div class="location">📍 ${escapeHtml(provider.area)}, Islamabad</div>
           <button class="card-btn" type="button" data-provider-name="${escapeHtml(provider.name)}">View contact options</button>
