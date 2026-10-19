@@ -451,6 +451,10 @@ function getEstimatedRate(provider) {
   if (category.includes("ac repair")) return "From Rs 1,500";
   if (category.includes("carpent")) return "From Rs 1,000";
   if (category.includes("clean")) return "From Rs 1,000";
+if (category.includes("education")) return "Rate varies by subject";
+if (category.includes("beauty")) return "Price on request";
+
+  
   if (category.includes("paint")) return "Price on request";
   return "Contact for a quote";
 }
