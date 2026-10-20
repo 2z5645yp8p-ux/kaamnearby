@@ -767,6 +767,92 @@ if (bookingForm) {
     submitButton.disabled = false;
   });
 }
+
+function showKaamNearbyPasswordResetForm() {
+  if (document.getElementById("kn-password-reset")) return;
+
+  const panel = document.createElement("div");
+  panel.id = "kn-password-reset";
+  panel.style.cssText =
+    "position:fixed;inset:0;z-index:99999;background:#f5f5f5;" +
+    "display:flex;align-items:center;justify-content:center;padding:20px;" +
+    "font-family:Arial,sans-serif;";
+
+  panel.innerHTML = `
+    <form id="kn-reset-form" style="background:white;padding:28px;
+      border-radius:14px;max-width:380px;width:100%;
+      box-shadow:0 4px 20px #0002">
+      <h2 style="margin-top:0">Reset your password</h2>
+      <p>Enter your new admin password below.</p>
+      <label for="kn-new-password">New password</label>
+      <input id="kn-new-password" type="password" minlength="8"
+        autocomplete="new-password" required
+        style="box-sizing:border-box;width:100%;padding:12px;
+        margin:8px 0 16px;border:1px solid #ccc;border-radius:8px">
+      <label for="kn-confirm-password">Confirm password</label>
+      <input id="kn-confirm-password" type="password" minlength="8"
+        autocomplete="new-password" required
+        style="box-sizing:border-box;width:100%;padding:12px;
+        margin:8px 0 16px;border:1px solid #ccc;border-radius:8px">
+      <button type="submit" style="width:100%;padding:12px;
+        background:#176b45;color:white;border:0;border-radius:8px;
+        cursor:pointer">Save new password</button>
+      <p id="kn-reset-status" role="status"></p>
+    </form>`;
+
+  document.body.appendChild(panel);
+
+  document.getElementById("kn-reset-form").addEventListener(
+    "submit", async function (event) {
+      event.preventDefault();
+
+      const password = document.getElementById("kn-new-password").value;
+      const confirm = document.getElementById("kn-confirm-password").value;
+      const status = document.getElementById("kn-reset-status");
+      const button = this.querySelector("button");
+
+      if (password.length < 8) {
+        status.textContent = "Use at least 8 characters.";
+        return;
+      }
+
+      if (password !== confirm) {
+        status.textContent = "Passwords do not match.";
+        return;
+      }
+
+      button.disabled = true;
+      status.textContent = "Updating password...";
+
+      try {
+        const { error } = await supabaseClient.auth.updateUser({
+          password: password
+        });
+
+        if (error) throw error;
+
+        status.textContent =
+          "Password updated successfully! You can now sign in.";
+        document.getElementById("kn-reset-form").reset();
+      } catch (error) {
+        console.error("Password update failed:", error);
+        status.textContent =
+          error.message || "Could not update password. Try again.";
+      } finally {
+        button.disabled = false;
+      }
+    }
+  );
+}
+
+if (supabaseClient) {
+  supabaseClient.auth.onAuthStateChange((event) => {
+    if (event === "PASSWORD_RECOVERY") {
+      setTimeout(showKaamNearbyPasswordResetForm, 0);
+    }
+  });
+}
+
 </script>
 
 </body>
