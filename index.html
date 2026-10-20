@@ -663,5 +663,111 @@ if (category.includes("handyman")) return "From Rs 1,000";
     renderProviders();
     loadApprovedProviders();
   </script>
+
+<section id="booking" class="section-anchor">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <h2>Book a Service</h2>
+        <p>Send a booking request to KaamNearby.</p>
+      </div>
+    </div>
+
+    <form id="bookingForm">
+      <label for="bookingName">Your name</label>
+      <input id="bookingName" name="customer_name" required placeholder="Enter your name">
+
+      <label for="bookingPhone">Phone number</label>
+      <input id="bookingPhone" name="customer_phone" type="tel" required placeholder="03XXXXXXXXX">
+
+      <label for="bookingService">Choose service</label>
+      <select id="bookingService" name="service_name" required>
+        <option value="">Choose a service</option>
+        <option>Plumbing</option>
+        <option>Electrical</option>
+        <option>AC Repair</option>
+        <option>Moving</option>
+        <option>Handyman</option>
+        <option>Beauty / Salon</option>
+        <option>Photography</option>
+        <option>Video Shooting</option>
+        <option>Cleaning</option>
+        <option>Carpentry</option>
+        <option>Other</option>
+      </select>
+
+      <label for="bookingArea">Area in Islamabad</label>
+      <input id="bookingArea" name="customer_area" required placeholder="e.g. G-11">
+
+      <label for="bookingDate">Preferred date</label>
+      <input id="bookingDate" name="preferred_date" type="date">
+
+      <label for="bookingTime">Preferred time</label>
+      <select id="bookingTime" name="preferred_time">
+        <option value="">Any time</option>
+        <option>Morning</option>
+        <option>Afternoon</option>
+        <option>Evening</option>
+      </select>
+
+      <label for="bookingDetails">Additional details</label>
+      <textarea id="bookingDetails" name="details" placeholder="Describe the work you need"></textarea>
+
+      <button class="card-btn" type="submit">Submit Booking Request</button>
+      <p id="bookingStatus" role="status"></p>
+    </form>
+  </div>
+</section>
+
+<script>
+const bookingForm = document.getElementById("bookingForm");
+
+if (bookingForm) {
+  bookingForm.addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const status = document.getElementById("bookingStatus");
+    const submitButton = bookingForm.querySelector('button[type="submit"]');
+
+    if (!supabaseClient) {
+      status.textContent = "Booking service is unavailable. Please try again later.";
+      return;
+    }
+
+    submitButton.disabled = true;
+    status.textContent = "Submitting your booking...";
+
+    const booking = {
+      customer_name: document.getElementById("bookingName").value.trim(),
+      customer_phone: document.getElementById("bookingPhone").value.trim(),
+      service_name: document.getElementById("bookingService").value,
+      customer_area: document.getElementById("bookingArea").value.trim(),
+      preferred_date: document.getElementById("bookingDate").value || null,
+      preferred_time: document.getElementById("bookingTime").value || null,
+      details: document.getElementById("bookingDetails").value.trim() || null
+    };
+
+    try {
+      const { error } = await supabaseClient
+        .from("bookings")
+        .insert([booking]);
+
+      if (error) {
+        console.error(error);
+        status.textContent = "Booking failed. Please try again.";
+      } else {
+        status.textContent = "Booking request submitted successfully!";
+        bookingForm.reset();
+      }
+    } catch (error) {
+      console.error(error);
+      status.textContent = "Something went wrong. Please try again.";
+    }
+
+    submitButton.disabled = false;
+  });
+}
+</script>
+
 </body>
 </html>
