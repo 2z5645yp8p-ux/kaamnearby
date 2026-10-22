@@ -627,6 +627,25 @@
     </div>
   </div>
 
+  <script>
+    // Independent startup sequence: logo for 4 seconds, then intro until Continue.
+    (function () {
+      const splash = document.getElementById('splashScreen');
+      const intro = document.getElementById('serviceIntro');
+      const continueButton = document.getElementById('serviceIntroContinue');
+      window.setTimeout(function () {
+        if (splash) splash.classList.add('splash-hide');
+        if (intro) { intro.hidden = false; intro.classList.remove('intro-hide'); }
+      }, 4000);
+      if (continueButton) {
+        continueButton.addEventListener('click', function () {
+          if (!intro) return;
+          intro.classList.add('intro-hide');
+          window.setTimeout(function () { intro.hidden = true; }, 450);
+        });
+      }
+    })();
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // Show logo for 4 seconds, then keep the services intro visible until Continue is pressed.
