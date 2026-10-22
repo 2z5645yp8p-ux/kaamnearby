@@ -55,6 +55,7 @@
     .section-head h2 { margin: 0 0 6px; color: var(--navy); font-size: clamp(1.55rem, 3vw, 2rem); letter-spacing: -.035em; }
     .section-head p { color: var(--muted); margin: 0; }
     .categories { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+    #providers.providers-hidden { display: none; }
     .category { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 190px; background: white; border: 1px solid var(--line); border-radius: 20px; padding: 18px 14px; text-align: center; color: var(--ink); transition: .2s; cursor: pointer; }
     .category:hover, .category.active { border-color: var(--teal); background: var(--mint); }
     .category .category-photo { display:block; width:100%; height:142px; object-fit:cover; border-radius:14px; margin:0 0 12px; background:#edf4f0; }
@@ -367,7 +368,7 @@
         </div>
         <div class="categories" id="categories">
           <button class="category" type="button" data-category="Home repairs" aria-label="Home Repair: Plumber, Electrician, AC Repair, Carpenter and Handyman">
-            <img class="category-photo" src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=700&q=80" alt="Home repair worker standing with tools" loading="lazy"><span class="category-name">Home Repair</span>
+            <img class="category-photo" src="https://images.unsplash.com/photo-1621905251918-48416bd8575a?auto=format&fit=crop&w=700&q=80" alt="Repair technician working on electrical equipment with tools" loading="lazy" onerror="this.onerror=null;this.src='https://images.pexels.com/photos/5691622/pexels-photo-5691622.jpeg?auto=compress&cs=tinysrgb&w=700'"><span class="category-name">Home Repair</span>
             <span class="category-desc">Plumber · Electrician · AC Repair · Carpenter · Handyman</span><span class="category-desc">Home wiring, plumbing, AC servicing aur ghar ki marammat.</span>
           </button>
           <button class="category" type="button" data-category="Cleaning" aria-label="Cleaning: Home and deep cleaning">
@@ -375,18 +376,18 @@
             <span class="category-desc">Home Cleaning · Deep Cleaning · Office Cleaning</span><span class="category-desc">Professional cleaners, vacuum cleaning aur ghar/office ki mukammal safai.</span>
           </button>
           <button class="category" type="button" data-category="Beauty" aria-label="Beauty and Salon: Makeup, haircut and grooming">
-            <img class="category-photo" src="https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=700&q=80" alt="Beauty salon and makeup services" loading="lazy"><span class="category-name">Beauty &amp; Salon</span>
+            <img class="category-photo" src="https://images.pexels.com/photos/3993449/pexels-photo-3993449.jpeg?auto=compress&cs=tinysrgb&w=700" alt="Stylist actively working on a client in a beauty salon" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=700&q=80'"><span class="category-name">Beauty &amp; Salon</span>
             <span class="category-desc">Makeup · Haircut · Grooming · Salon Services</span><span class="category-desc">Facial, hair styling, personal grooming aur beauty care.</span>
           </button>
           <button class="category" type="button" data-category="Moving" aria-label="Moving and Shifting: Packing, household shifting and furniture moving">
-            <img class="category-photo" src="https://images.unsplash.com/photo-1600518464441-9306b6e7b1a9?auto=format&fit=crop&w=700&q=80" alt="Household moving and furniture shifting" loading="lazy"><span class="category-name">Moving &amp; Shifting</span>
+            <img class="category-photo" src="https://images.pexels.com/photos/7464230/pexels-photo-7464230.jpeg?auto=compress&cs=tinysrgb&w=700" alt="Movers packing and carrying household belongings" loading="lazy" onerror="this.onerror=null;this.src='https://images.pexels.com/photos/4246120/pexels-photo-4246120.jpeg?auto=compress&cs=tinysrgb&w=700'"><span class="category-name">Moving &amp; Shifting</span>
             <span class="category-desc">Packing · Household Shifting · Furniture Moving</span><span class="category-desc">Ghar ka samaan pack karna, furniture uthana aur shifting transport.</span>
           </button>
         </div>
       </div>
     </section>
 
-    <section id="providers" class="section-anchor" style="padding-top: 12px;">
+    <section id="providers" class="section-anchor providers-hidden" style="padding-top: 12px;">
       <div class="container">
         <div class="section-head">
           <div><h2>Explore local providers</h2><p>Choose a service and area to see matching providers. Prioritize your area to see local providers first.</p></div>
@@ -1305,6 +1306,9 @@ if (category.includes("handyman")) return "From Rs 1,000";
 
     document.getElementById("searchForm").addEventListener("submit", event => {
       event.preventDefault();
+      document.getElementById("providers").classList.remove("providers-hidden");
+      selectedCategory = "";
+      categoryButtons.forEach(item => item.classList.remove("active"));
       renderProviders();
       document.getElementById("providerCards").scrollIntoView({ behavior: "smooth", block: "start" });
     });
@@ -1316,8 +1320,10 @@ if (category.includes("handyman")) return "From Rs 1,000";
     categoryButtons.forEach(button => {
       button.addEventListener("click", () => {
         const category = button.dataset.category;
-        selectedCategory = selectedCategory === category ? "" : category;
+        selectedCategory = category;
+        document.getElementById("providers").classList.remove("providers-hidden");
         categoryButtons.forEach(item => item.classList.toggle("active", item.dataset.category === selectedCategory));
+        if (serviceFilter) serviceFilter.value = "";
         renderProviders();
         document.getElementById("providers").scrollIntoView({ behavior: "smooth", block: "start" });
       });
