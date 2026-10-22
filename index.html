@@ -1365,16 +1365,32 @@ if (category.includes("handyman")) return "From Rs 1,000";
     });
 
     async function loadApprovedProviders() {
-      if (!supabaseClient) return;
+      // Never silently leave the page showing zero providers if the Supabase
+      // JavaScript library or client configuration did not load.
+      if (!supabaseClient) {
+        providers = [];
+        cards.innerHTML = '<div class="empty"><h3>Kaamly could not connect to the provider database</h3><p>Please refresh the page. If this message remains, the Supabase connection library or public key was not loaded.</p></div>';
+        resultsCount.textContent = "Provider connection unavailable";
+        console.error("Kaamly: Supabase client is unavailable", { supabaseConfigured, supabaseLibraryLoaded: !!window.supabase });
+        return;
+      }
       try {
-        // Read the available provider columns instead of naming optional columns in
-        // SELECT; a missing optional column (for example whatsapp/status) must not
-        // make the entire provider list fail. Deliberately do not filter by status.
+        // Only approved listings should be public. The database SELECT policy
+        // remains the security boundary; this filter also avoids rendering pending rows.
         const { data, error } = await supabaseClient
           .from("providers")
-          .select("*");
+          .select("*")
+          .eq("status", "approved");
         if (error) throw error;
         const rows = Array.isArray(data) ? data : [];
+        console.info(`Kaamly: ${rows.length} approved provider row(s) received from Supabase.`);
+        if (rows.length === 0) {
+          communityProviders = [];
+          providers = [];
+          cards.innerHTML = '<div class="empty"><h3>No approved providers were returned</h3><p>Supabase connected, but the public query returned zero approved rows. Check the provider SELECT policy and make sure the approved status is exactly <strong>approved</strong>.</p></div>';
+          resultsCount.textContent = "Showing 0 providers";
+          return;
+        }
         communityProviders = rows.map(row => {
           const phone = String(row.phone ?? row.phone_number ?? row.mobile ?? row.contact_phone ?? row.provider_phone ?? "");
           return {
