@@ -201,6 +201,13 @@
     .contact-link.whatsapp { background: #16864a; }
     .mobile-nav { display: none; }
     .section-anchor { scroll-margin-top: 92px; }
+    /* Keep the provider sign-in area available without leaving a large empty gap. */
+    #add-provider.compact-provider-section { padding: 16px 0 12px; }
+    #add-provider.compact-provider-section .section-head { margin-bottom: 10px; }
+    #add-provider.compact-provider-section .section-head h2 { font-size: clamp(1.2rem, 2.5vw, 1.45rem); letter-spacing: -.02em; }
+    #add-provider.compact-provider-section .auth-panel { padding: 12px; margin-bottom: 0; }
+    #add-provider.compact-provider-section .auth-panel p { margin: 6px 0; }
+
     @media (max-width: 850px) {
       .hero { padding-top: 46px; }
       .hero-grid { gap: 20px; }
@@ -380,7 +387,7 @@
             <span class="category-desc">Makeup · Haircut · Grooming · Salon Services</span><span class="category-desc">Facial, hair styling, personal grooming aur beauty care.</span>
           </button>
           <button class="category" type="button" data-category="Moving" aria-label="Moving and Shifting: Packing, household shifting and furniture moving">
-            <img class="category-photo" src="https://images.pexels.com/photos/7464230/pexels-photo-7464230.jpeg?auto=compress&cs=tinysrgb&w=700" alt="Movers packing and carrying household belongings" loading="lazy" onerror="this.onerror=null;this.src='https://images.pexels.com/photos/4246120/pexels-photo-4246120.jpeg?auto=compress&cs=tinysrgb&w=700'"><span class="category-name">Moving &amp; Shifting</span>
+            <img class="category-photo" src="https://images.unsplash.com/photo-1600518464441-9306b3e7e7a9?auto=format&fit=crop&w=700&q=80" alt="Household moving boxes and belongings prepared for shifting" loading="lazy" onerror="this.onerror=null;this.src='https://images.pexels.com/photos/4246120/pexels-photo-4246120.jpeg?auto=compress&cs=tinysrgb&w=700'"><span class="category-name">Moving &amp; Shifting</span>
             <span class="category-desc">Packing · Household Shifting · Furniture Moving</span><span class="category-desc">Ghar ka samaan pack karna, furniture uthana aur shifting transport.</span>
           </button>
         </div>
@@ -430,10 +437,10 @@
     </section>
 
 
-    <section id="add-provider" class="section-anchor">
+    <section id="add-provider" class="section-anchor compact-provider-section">
       <div class="container">
         <div class="section-head">
-          <div><h2>List your service</h2><p>Are you a local provider? Add a sample listing to try the directory.</p></div>
+          <div><h2>Offer services on Kaamly</h2><p>Service providers can sign in or create a provider account here.</p></div>
         </div>
         <div class="auth-panel" id="providerAuthPanel">
           <h3>Kaamly Account</h3>
@@ -457,14 +464,14 @@
           </div>
           <div id="providerSignupDetails" class="provider-signup-details" hidden>
             <p><strong>Provider details</strong></p>
-            <p class="provider-signup-help">Select your main service. These details will be used to prepare your public listing after you verify your account.</p>
+            <p class="provider-signup-help">Provider account banane se pehle tamam required service details complete karna zaroori hai. In details ke baghair signup aage nahi chalega.</p>
             <div class="field">
               <label for="providerSignupName">Your name / business name *</label>
-              <input id="providerSignupName" maxlength="70" placeholder="e.g. Ahmed Electrician">
+              <input id="providerSignupName" maxlength="70" required placeholder="e.g. Ahmed Electrician">
             </div>
             <div class="field">
               <label for="providerSignupService">Which service do you provide? *</label>
-              <select id="providerSignupService">
+              <select id="providerSignupService" required>
                 <option value="">Choose your service</option>
                 <option>Plumber</option><option>Electrician</option><option>AC Repair</option>
                 <option>Tutor</option><option>Carpenter</option><option>Cleaner</option>
@@ -475,14 +482,14 @@
             </div>
             <div class="field">
               <label for="providerSignupArea">Area you serve *</label>
-              <select id="providerSignupArea">
+              <select id="providerSignupArea" required>
                 <option value="">Choose your area</option>
                 <option>F-6</option><option>F-7</option><option>F-10</option><option>G-9</option><option>I-8</option><option>Bahria Town</option>
               </select>
             </div>
             <div class="field">
               <label for="providerSignupPhone">Contact phone *</label>
-              <input id="providerSignupPhone" type="tel" maxlength="24" placeholder="03XX XXXXXXX">
+              <input id="providerSignupPhone" type="tel" maxlength="24" required placeholder="03XX XXXXXXX">
             </div>
             <div class="field">
               <label for="providerSignupWhatsapp">WhatsApp (optional)</label>
@@ -490,7 +497,7 @@
             </div>
             <div class="field">
               <label for="providerSignupDescription">Experience / services details *</label>
-              <textarea id="providerSignupDescription" maxlength="220" placeholder="Tell customers what work you do and your experience."></textarea>
+              <textarea id="providerSignupDescription" maxlength="220" required placeholder="Tell customers what work you do and your experience."></textarea>
             </div>
           </div>
           <div id="signupRolePicker" class="auth-role-picker" hidden>
@@ -840,15 +847,41 @@ if (category.includes("handyman")) return "From Rs 1,000";
       authStatusEl.textContent = message;
     }
 
+    function validateEmailAddress(value) {
+      const email = String(value || "").trim().toLowerCase();
+      // Basic email structure plus common typo detection. Verification still proves ownership.
+      const match = email.match(/^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+)$/i);
+      if (!match) return { valid: false, message: "Email address ka format ghalat hai. Example: name@gmail.com" };
+      const domain = match[1].toLowerCase();
+      const commonTypos = {
+        "gmal.com":"gmail.com", "gmai.com":"gmail.com", "gmial.com":"gmail.com", "gmail.con":"gmail.com", "gmail.co":"gmail.com", "gmail.cm":"gmail.com", "gmail.om":"gmail.com",
+        "yahoo.con":"yahoo.com", "yaho.com":"yahoo.com", "hotmial.com":"hotmail.com", "hotmail.con":"hotmail.com", "outlok.com":"outlook.com", "outlook.con":"outlook.com"
+      };
+      if (commonTypos[domain]) return { valid: false, message: `Email domain shayad ghalat likha hai. Kya aap @${commonTypos[domain]} kehna chahte hain?` };
+      const labels = domain.split(".");
+      if (labels.some(label => !label || label.startsWith("-") || label.endsWith("-")) || labels[labels.length - 1].length < 2) {
+        return { valid: false, message: "Email ka domain sahi nahi lag raha. Spelling check karein." };
+      }
+      return { valid: true, email };
+    }
+
+    function normalizePakistaniMobile(value) {
+      let digits = String(value || "").replace(/\D/g, "");
+      if (digits.startsWith("0092")) digits = digits.slice(2);
+      if (digits.startsWith("03") && digits.length === 11) digits = "92" + digits.slice(1);
+      else if (digits.length === 10 && digits.startsWith("3")) digits = "92" + digits;
+      if (!/^923\d{9}$/.test(digits)) return "";
+      return "+" + digits;
+    }
+
     function normalizeIdentifier(value) {
       const identifier = String(value || "").trim();
-      if (identifier.includes("@")) return { email: identifier.toLowerCase() };
-      let digits = identifier.replace(/[\s()-]/g, "");
-      if (digits.startsWith("00")) digits = "+" + digits.slice(2);
-      if (digits.startsWith("03") && digits.length === 11) digits = "+92" + digits.slice(1);
-      else if (/^3\d{9}$/.test(digits)) digits = "+92" + digits;
-      if (!/^\+[1-9]\d{7,14}$/.test(digits)) return null;
-      return { phone: digits };
+      if (identifier.includes("@")) {
+        const checked = validateEmailAddress(identifier);
+        return checked.valid ? { email: checked.email } : null;
+      }
+      const phone = normalizePakistaniMobile(identifier);
+      return phone ? { phone } : null;
     }
 
     async function loadAccountRole(session, shouldRoute = true) {
@@ -948,6 +981,9 @@ if (category.includes("handyman")) return "From Rs 1,000";
       rolePickerEl.hidden = true;
       authControlsEl.hidden = false;
       providerSignupDetailsEl.hidden = role !== "provider";
+      ["providerSignupName", "providerSignupService", "providerSignupArea", "providerSignupPhone", "providerSignupDescription"].forEach(id => {
+        document.getElementById(id).required = role === "provider";
+      });
       signupStepLabelEl.hidden = false;
       signupStepLabelEl.textContent = role === "customer"
         ? "Customer account — email/phone aur password enter karein."
@@ -996,17 +1032,29 @@ if (category.includes("handyman")) return "From Rs 1,000";
       const identifier = normalizeIdentifier(document.getElementById("authIdentifier").value);
       const password = document.getElementById("authPassword").value;
       const role = selectedSignupRole || document.getElementById("signupRole").value;
-      if (!identifier) return showAuthStatus("Enter a valid email address or phone number such as +923001234567.", "error");
+      if (!identifier) {
+        const rawIdentifier = document.getElementById("authIdentifier").value.trim();
+        if (rawIdentifier.includes("@")) {
+          const emailCheck = validateEmailAddress(rawIdentifier);
+          return showAuthStatus(emailCheck.message || "Email address sahi nahi hai. Spelling check karein.", "error");
+        }
+        return showAuthStatus("Pakistan ka valid mobile number enter karein: 03001234567 ya +923001234567.", "error");
+      }
       if (password.length < 8) return showAuthStatus("Password must contain at least 8 characters.", "error");
       const providerService = document.getElementById("providerSignupService").value;
       const providerPhone = document.getElementById("providerSignupPhone").value.trim();
       const providerWhatsapp = document.getElementById("providerSignupWhatsapp").value.trim();
       if (role === "provider") {
-        if (!document.getElementById("providerSignupName").value.trim() || !providerService || !document.getElementById("providerSignupArea").value || !providerPhone || !document.getElementById("providerSignupDescription").value.trim()) {
-          return showAuthStatus("Provider account ke liye naam, service, area, phone aur service details complete karein.", "error");
+        const providerName = document.getElementById("providerSignupName").value.trim();
+        const providerArea = document.getElementById("providerSignupArea").value;
+        const providerDescription = document.getElementById("providerSignupDescription").value.trim();
+        const providerPhoneNormalized = normalizeWhatsAppNumber(providerPhone);
+        const whatsappNormalized = providerWhatsapp ? normalizeWhatsAppNumber(providerWhatsapp) : providerPhoneNormalized;
+        if (!providerName || !providerService || !providerArea || !providerPhone || !providerDescription) {
+          return showAuthStatus("Signup rok diya gaya: naam, service, area, contact phone aur service details sab bharna zaroori hai.", "error");
         }
-        if (!normalizeWhatsAppNumber(providerPhone).length || (providerWhatsapp && !normalizeWhatsAppNumber(providerWhatsapp))) {
-          return showAuthStatus("Valid phone/WhatsApp number enter karein, example 03XX XXXXXXX.", "error");
+        if (!normalizePakistaniMobile(providerPhone) || (providerWhatsapp && !normalizePakistaniMobile(providerWhatsapp))) {
+          return showAuthStatus("Valid Pakistani mobile number enter karein: 03001234567 ya +923001234567.", "error");
         }
       }
       const button = document.getElementById("emailSignUpBtn");
@@ -1037,12 +1085,12 @@ if (category.includes("handyman")) return "From Rs 1,000";
           document.getElementById("phoneOtpPanel").hidden = true;
           await loadAccountRole(data.session, true);
         } else if (identifier.email) {
-          showAuthStatus("Account created. Check your email and click the confirmation link. After confirming, sign in to continue. Your provider details will be saved with your account.", "success");
+          showAuthStatus(role === "provider" ? "Provider signup details account ke saath save ho gayi hain. Email confirmation link click karke phir sign in karein." : "Account created. Check your email and click the confirmation link, then sign in.", "success");
         } else {
           pendingPhoneSignup = { phone: identifier.phone, role };
           document.getElementById("phoneOtpPanel").hidden = false;
           document.getElementById("phoneOtpCode").value = "";
-          showAuthStatus("Account created. Enter the SMS verification code sent to your phone to finish creating the account.", "success");
+          showAuthStatus(role === "provider" ? "Provider details ke saath account create ho gaya hai. Signup complete karne ke liye SMS verification code enter karein." : "Account created. Enter the SMS verification code sent to your phone.", "success");
           document.getElementById("phoneOtpCode").focus();
         }
       } catch (error) {
@@ -1065,6 +1113,9 @@ if (category.includes("handyman")) return "From Rs 1,000";
       rolePickerEl.hidden = true;
       authControlsEl.hidden = false;
       providerSignupDetailsEl.hidden = true;
+      ["providerSignupName", "providerSignupService", "providerSignupArea", "providerSignupPhone", "providerSignupDescription"].forEach(id => {
+        document.getElementById(id).required = false;
+      });
       signupStepLabelEl.hidden = true;
       signInButtonEl.hidden = false;
       signUpButtonEl.hidden = false;
@@ -1129,7 +1180,14 @@ if (category.includes("handyman")) return "From Rs 1,000";
       if (!supabaseClient) return showAuthStatus("Database connection is not configured.", "error");
       const identifier = normalizeIdentifier(document.getElementById("authIdentifier").value);
       const password = document.getElementById("authPassword").value;
-      if (!identifier) return showAuthStatus("Enter a valid email address or phone number such as +923001234567.", "error");
+      if (!identifier) {
+        const rawIdentifier = document.getElementById("authIdentifier").value.trim();
+        if (rawIdentifier.includes("@")) {
+          const emailCheck = validateEmailAddress(rawIdentifier);
+          return showAuthStatus(emailCheck.message || "Email address sahi nahi hai. Spelling check karein.", "error");
+        }
+        return showAuthStatus("Pakistan ka valid mobile number enter karein: 03001234567 ya +923001234567.", "error");
+      }
       if (!password) return showAuthStatus("Enter your password.", "error");
       const button = document.getElementById("emailSignInBtn");
       button.disabled = true;
