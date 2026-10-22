@@ -330,7 +330,7 @@
       <button id="serviceIntroContinue" class="service-intro-continue" type="button">Continue →</button>
     </div>
   </section>
-  <div id="authGate" role="dialog" aria-modal="true" aria-labelledby="authGateTitle">
+  <div id="authGate" hidden role="dialog" aria-modal="true" aria-labelledby="authGateTitle">
     <div class="auth-gate-card">
       <div class="auth-gate-brand"><span class="brand-mark">⌂</span><span>Kaamly</span></div>
       <h1 id="authGateTitle">Sign in to get started</h1>
@@ -627,42 +627,28 @@
     </div>
   </div>
 
-  <script>
-    // Independent startup sequence: logo for 4 seconds, then intro until Continue.
-    (function () {
-      const splash = document.getElementById('splashScreen');
-      const intro = document.getElementById('serviceIntro');
-      const continueButton = document.getElementById('serviceIntroContinue');
-      window.setTimeout(function () {
-        if (splash) splash.classList.add('splash-hide');
-        if (intro) { intro.hidden = false; intro.classList.remove('intro-hide'); }
-      }, 4000);
-      if (continueButton) {
-        continueButton.addEventListener('click', function () {
-          if (!intro) return;
-          intro.classList.add('intro-hide');
-          window.setTimeout(function () { intro.hidden = true; }, 450);
-        });
-      }
-    })();
-  </script>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // Show logo for 4 seconds, then keep the services intro visible until Continue is pressed.
+    // One startup sequence: logo for 3 seconds, then intro until Continue.
     const splashScreen = document.getElementById("splashScreen");
     const serviceIntro = document.getElementById("serviceIntro");
     const serviceIntroContinue = document.getElementById("serviceIntroContinue");
+    window.kaamlyIntroFinished = false;
     window.setTimeout(() => {
       if (splashScreen) splashScreen.classList.add("splash-hide");
       if (serviceIntro) {
         serviceIntro.hidden = false;
         serviceIntro.classList.remove("intro-hide");
       }
-    }, 4000);
+    }, 3000);
     if (serviceIntroContinue) {
       serviceIntroContinue.addEventListener("click", () => {
         if (serviceIntro) {
           serviceIntro.classList.add("intro-hide");
+          window.kaamlyIntroFinished = true;
+          const gate = document.getElementById("authGate");
+          if (gate && document.body.classList.contains("auth-locked")) gate.hidden = false;
           window.setTimeout(() => { serviceIntro.hidden = true; }, 450);
         }
       });
@@ -675,7 +661,7 @@
     if (providerAuthPanelAtStart && authGatePanelSlot) authGatePanelSlot.appendChild(providerAuthPanelAtStart);
     function setAuthGate(locked) {
       document.body.classList.toggle("auth-locked", locked);
-      authGate.hidden = !locked;
+      authGate.hidden = !locked || !window.kaamlyIntroFinished;
       const accountAction = document.getElementById("accountAction");
       if (accountAction) accountAction.hidden = locked;
     }
@@ -740,6 +726,12 @@ if (category.includes("handyman")) return "From Rs 1,000";
       if (/moving|shifting/.test(category)) return "Moving";
       if (/education/.test(category)) return "Education";
       if (/technology|computer/.test(category)) return "Technology";
+      if (/home.?repair|repair|plumb|electric|carpent|handyman/.test(category)) return "Home repairs";
+      if (/clean/.test(category)) return "Cleaning";
+      if (/beauty|salon|groom/.test(category)) return "Beauty";
+      if (/moving|shift|transport/.test(category)) return "Moving";
+      if (/education|tutor|teach/.test(category)) return "Education";
+      if (/technology|computer|it repair/.test(category)) return "Technology";
       return provider.category || "Home repairs";
     }
 
@@ -1362,17 +1354,17 @@ if (category.includes("handyman")) return "From Rs 1,000";
         if (error) throw error;
         const rows = Array.isArray(data) ? data : [];
         communityProviders = rows.map(row => {
-          const phone = String(row.phone ?? row.contact_phone ?? row.provider_phone ?? "");
+          const phone = String(row.phone ?? row.phone_number ?? row.mobile ?? row.contact_phone ?? row.provider_phone ?? "");
           return {
             id: row.id ?? row.provider_id ?? `${row.user_id ?? row.name ?? "provider"}-${rows.indexOf(row)}`,
             user_id: row.user_id || null,
-            name: String(row.name ?? row.provider_name ?? row.business_name ?? "Service Provider"),
-            type: String(row.service_type ?? row.service_name ?? row.type ?? row.service ?? "General service"),
-            category: String(row.category ?? row.provider_category ?? "Home repairs"),
-            area: String(row.area ?? row.provider_area ?? row.location ?? "Islamabad"),
+            name: String(row.name ?? row.full_name ?? row.provider_name ?? row.business_name ?? "Service Provider"),
+            type: String(row.service_type ?? row.provider_service ?? row.service_name ?? row.service ?? row.type ?? row.skills ?? "General service"),
+            category: String(row.category ?? row.provider_category ?? row.service_category ?? row.category_name ?? "Home repairs"),
+            area: String(row.area ?? row.provider_area ?? row.service_area ?? row.location ?? row.city ?? "Islamabad"),
             phone,
             whatsapp: String(row.whatsapp ?? row.whatsapp_number ?? phone),
-            description: String(row.description ?? row.details ?? row.experience ?? "Contact this provider for service details."),
+            description: String(row.description ?? row.details ?? row.bio ?? row.about ?? row.experience ?? "Contact this provider for service details."),
             icon: "🛠️",
             isCommunity: true
           };
@@ -1383,7 +1375,7 @@ if (category.includes("handyman")) return "From Rs 1,000";
         console.error("Kaamly load error:", error);
         providers = [];
         const detail = String(error?.message || error || "Unknown database error");
-        cards.innerHTML = `<div class="empty"><h3>Providers could not be loaded</h3><p>Supabase returned an error. Check the providers table SELECT policy (RLS) and table columns.</p><p><strong>Technical detail:</strong> ${escapeHtml(detail)}</p></div>`;
+        cards.innerHTML = `<div class="empty"><h3>Providers could not be loaded</h3><p>Supabase returned an error. Check Supabase providers SELECT policy (RLS). If the policy blocks SELECT, HTML cannot show rows until the database policy is fixed.</p><p><strong>Technical detail:</strong> ${escapeHtml(detail)}</p></div>`;
         resultsCount.textContent = "Provider list unavailable";
       }
     }
