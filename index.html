@@ -91,6 +91,15 @@
     .modal p { color: var(--muted); line-height: 1.6; }
     .modal-actions { display: flex; justify-content: end; gap: 10px; margin-top: 20px; }
     .secondary-btn { padding: 11px 15px; background: #edf2f5; border-radius: 10px; color: var(--ink); font-weight: 750; }
+    .feature-btn { padding: 11px 13px; border-radius: 10px; color: white; background: var(--teal); font-weight: 750; }
+    .feature-btn.secondary { background: #edf7f8; color: var(--teal-dark); }
+    .feature-panel { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 14px; }
+    .feature-panel input, .feature-panel textarea { width: 100%; padding: 11px; border: 1px solid var(--line); border-radius: 9px; font: inherit; }
+    .chat-messages { height: 210px; overflow: auto; background: #f6f9fb; border-radius: 10px; padding: 10px; margin: 10px 0; }
+    .chat-message { padding: 8px 10px; background: white; border: 1px solid var(--line); border-radius: 10px; margin: 7px 0; overflow-wrap: anywhere; }
+    .chat-message.mine { background: var(--mint); }
+    .feature-status { font-size: .86rem; color: var(--muted); line-height: 1.5; }
+
 
     .provider-form-wrap[hidden] { display: none !important; }
     .provider-form-wrap { background: white; border: 1px solid var(--line); border-radius: 18px; padding: 24px; box-shadow: var(--shadow); }
@@ -579,7 +588,19 @@
       <div class="modal-actions">
         <a class="contact-link" id="callProvider" href="#" hidden>Call provider</a>
         <a class="contact-link whatsapp" id="whatsappProvider" href="#" target="_blank" rel="noopener noreferrer" hidden>WhatsApp</a>
+        <button class="feature-btn" id="bookSelectedProvider" type="button">Book this provider</button>
+        <button class="feature-btn secondary" id="openProviderChat" type="button">Private chat</button>
+        <button class="feature-btn secondary" id="startVoiceCall" type="button">Voice call</button>
         <button class="secondary-btn" id="closeModal" type="button">Close</button>
+      </div>
+      <div id="providerChatPanel" class="feature-panel" hidden>
+        <strong>Private booking chat</strong>
+        <p class="feature-status" id="chatStatus">Chat will be linked to a booking with this provider.</p>
+        <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
+        <form id="chatMessageForm"><input id="chatMessageInput" maxlength="2000" placeholder="Write a message…" required><button class="feature-btn" type="submit" style="margin-top:8px">Send message</button></form>
+        <audio id="remoteCallAudio" autoplay playsinline></audio>
+        <p class="feature-status" id="callStatus" aria-live="polite"></p>
+        <button class="secondary-btn" id="endVoiceCall" type="button" hidden>End call</button>
       </div>
     </div>
   </div>
@@ -726,7 +747,7 @@ if (category.includes("handyman")) return "From Rs 1,000";
           
           <p class="service-desc">${escapeHtml(provider.description)}</p>
           <div class="location">📍 ${escapeHtml(provider.area)}, Islamabad</div>
-          <button class="card-btn" type="button" data-provider-name="${escapeHtml(provider.name)}">View contact options</button>
+          <button class="card-btn" type="button" data-provider-id="${escapeHtml(String(provider.id || ""))}">View contact / book / chat</button>
         </article>
       `).join("");
 
@@ -734,12 +755,17 @@ if (category.includes("handyman")) return "From Rs 1,000";
 
     // Delegated handler: contact buttons keep working after searches and category filters.
     cards.addEventListener("click", event => {
-      const button = event.target.closest("[data-provider-name]");
+      const button = event.target.closest("[data-provider-id]");
       if (!button) return;
 
-      const provider = providers.find(item => item.name === button.dataset.providerName);
+      const provider = providers.find(item => String(item.id || "") === button.dataset.providerId);
       if (!provider) return;
 
+      window.kaamlySelectedProvider = provider;
+      document.getElementById("providerChatPanel").hidden = true;
+      document.getElementById("chatMessages").innerHTML = "";
+      document.getElementById("chatStatus").textContent = "Book this provider first. Private chat requires a booking linked to both accounts.";
+      document.getElementById("callStatus").textContent = "Voice calling is available after a booking is created and the database setup is complete.";
       document.getElementById("modalTitle").textContent = provider.name;
       const modalMessage = document.getElementById("modalMessage");
       const callLink = document.getElementById("callProvider");
@@ -1180,6 +1206,7 @@ if (category.includes("handyman")) return "From Rs 1,000";
         phone,
         whatsapp: whatsapp || phone,
         description: document.getElementById("providerDescription").value.trim(),
+        user_id: sessionData.session.user.id,
         status: "pending"
       };
       if (!provider.name || !provider.service_type || !provider.category || !provider.area || !provider.description) {
@@ -1193,8 +1220,14 @@ if (category.includes("handyman")) return "From Rs 1,000";
       status.className = "form-status show";
       status.textContent = "Submitting your listing for review…";
       try {
-        const { error } = await supabaseClient.from("providers").insert(provider);
-        if (error) throw error;
+        // Link the listing to the signed-in provider account. Update an existing linked listing instead of creating duplicates.
+        const { data: existingListing, error: existingError } = await supabaseClient
+          .from("providers").select("id").eq("user_id", sessionData.session.user.id).maybeSingle();
+        if (existingError) throw existingError;
+        const saveResult = existingListing
+          ? await supabaseClient.from("providers").update(provider).eq("id", existingListing.id)
+          : await supabaseClient.from("providers").insert(provider);
+        if (saveResult.error) throw saveResult.error;
         selectedCategory = "";
         categoryButtons.forEach(item => item.classList.remove("active"));
         searchInput.value = "";
@@ -1220,11 +1253,12 @@ if (category.includes("handyman")) return "From Rs 1,000";
       try {
         const { data, error } = await supabaseClient
           .from("providers")
-          .select("id, name, service_type, category, area, phone, whatsapp, description, status")
+          .select("id, user_id, name, service_type, category, area, phone, whatsapp, description, status")
           .eq("status", "approved");
         if (error) throw error;
         communityProviders = (data || []).map(row => ({
           id: row.id,
+          user_id: row.user_id || null,
           name: row.name,
           type: row.service_type,
           category: row.category || "Home repairs",
@@ -1270,6 +1304,169 @@ if (category.includes("handyman")) return "From Rs 1,000";
     document.getElementById("closeModal").addEventListener("click", () => modal.classList.remove("open"));
     modal.addEventListener("click", event => { if (event.target === modal) modal.classList.remove("open"); });
     document.addEventListener("keydown", event => { if (event.key === "Escape") modal.classList.remove("open"); });
+
+    // Selected-provider booking, private realtime chat and WebRTC voice calling.
+    let activeChatChannel = null;
+    let activeChatBookingId = null;
+    let voicePeer = null;
+    let localVoiceStream = null;
+    let signalChannel = null;
+    let signalPollTimer = null;
+    let lastSignalId = null;
+
+    document.getElementById("bookSelectedProvider").addEventListener("click", () => {
+      const provider = window.kaamlySelectedProvider;
+      if (!provider) return;
+      document.getElementById("bookingProviderId").value = provider.id || "";
+      const notice = document.getElementById("selectedProviderNotice");
+      notice.hidden = false;
+      notice.textContent = `Selected provider: ${provider.name}. Aapki booking isi provider ko assign hogi.`;
+      if (provider.type) {
+        const serviceSelect = document.getElementById("bookingService");
+        const option = [...serviceSelect.options].find(o => o.text.toLowerCase().includes(String(provider.type).toLowerCase()) || String(provider.type).toLowerCase().includes(o.text.toLowerCase()));
+        if (option) serviceSelect.value = option.value;
+      }
+      modal.classList.remove("open");
+      document.getElementById("booking").scrollIntoView({behavior:"smooth", block:"start"});
+      document.getElementById("bookingName").focus({preventScroll:true});
+    });
+
+    async function getMySession() {
+      if (!supabaseClient) throw new Error("Supabase connection nahi hai.");
+      const {data, error} = await supabaseClient.auth.getSession();
+      if (error) throw error;
+      if (!data.session) throw new Error("Pehle apne account mein sign in karein.");
+      return data.session;
+    }
+
+    async function findSelectedBooking(provider) {
+      const session = await getMySession();
+      if (currentAccountRole === "customer") {
+        const {data, error} = await supabaseClient.from("bookings").select("id, provider_id, customer_id, created_at")
+          .eq("customer_id", session.user.id).eq("provider_id", provider.id).order("created_at", {ascending:false}).limit(1).maybeSingle();
+        if (error) throw error;
+        if (!data) throw new Error("Is provider ke saath pehle booking submit karein, phir private chat/call shuru hogi.");
+        return data;
+      }
+      if (currentAccountRole === "provider") {
+        const {data: listing, error: listingError} = await supabaseClient.from("providers").select("id").eq("user_id", session.user.id).maybeSingle();
+        if (listingError) throw listingError;
+        if (!listing) throw new Error("Aapka provider account listing se link nahi hai. Provider form submit karein.");
+        const {data, error} = await supabaseClient.from("bookings").select("id, provider_id, customer_id, created_at")
+          .eq("provider_id", listing.id).order("created_at", {ascending:false}).limit(1).maybeSingle();
+        if (error) throw error;
+        if (!data) throw new Error("Abhi is listing par koi booking nahi hai.");
+        return data;
+      }
+      throw new Error("Private chat sirf customer aur provider accounts ke liye hai.");
+    }
+
+    function addChatMessage(message, myUserId) {
+      const list = document.getElementById("chatMessages");
+      const row = document.createElement("div");
+      row.className = "chat-message" + (message.sender_id === myUserId ? " mine" : "");
+      const text = document.createElement("div");
+      text.textContent = message.body || "";
+      const meta = document.createElement("small");
+      meta.textContent = new Date(message.created_at || Date.now()).toLocaleString();
+      row.append(text, meta); list.appendChild(row); list.scrollTop = list.scrollHeight;
+    }
+
+    async function openPrivateChat() {
+      const provider = window.kaamlySelectedProvider;
+      if (!provider) return;
+      const panel = document.getElementById("providerChatPanel");
+      panel.hidden = false;
+      document.getElementById("chatStatus").textContent = "Booking aur secure access verify ho raha hai…";
+      try {
+        const session = await getMySession();
+        const booking = await findSelectedBooking(provider);
+        activeChatBookingId = booking.id;
+        if (activeChatChannel) await supabaseClient.removeChannel(activeChatChannel);
+        document.getElementById("chatMessages").innerHTML = "";
+        const {data: messages, error} = await supabaseClient.from("chat_messages")
+          .select("id, booking_id, sender_id, body, created_at").eq("booking_id", booking.id).order("created_at", {ascending:true}).limit(200);
+        if (error) throw error;
+        (messages || []).forEach(m => addChatMessage(m, session.user.id));
+        activeChatChannel = supabaseClient.channel("kaamly-chat-" + booking.id)
+          .on("postgres_changes", {event:"INSERT", schema:"public", table:"chat_messages", filter:"booking_id=eq." + booking.id}, payload => {
+            if (payload.new.sender_id !== session.user.id) addChatMessage(payload.new, session.user.id);
+          }).subscribe();
+        document.getElementById("chatStatus").textContent = "Private chat active — sirf is booking ke customer aur provider ko access hona chahiye.";
+      } catch (error) {
+        document.getElementById("chatStatus").textContent = error.message || "Chat load nahi ho saki. SQL setup aur RLS policies check karein.";
+      }
+    }
+    document.getElementById("openProviderChat").addEventListener("click", openPrivateChat);
+    document.getElementById("chatMessageForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      const input = document.getElementById("chatMessageInput");
+      const body = input.value.trim(); if (!body || !activeChatBookingId) return;
+      try {
+        const session = await getMySession();
+        const {data, error} = await supabaseClient.from("chat_messages").insert({booking_id:activeChatBookingId, sender_id:session.user.id, body}).select("id, booking_id, sender_id, body, created_at").single();
+        if (error) throw error;
+        addChatMessage(data, session.user.id); input.value = "";
+      } catch (error) { document.getElementById("chatStatus").textContent = error.message || "Message send nahi hua."; }
+    });
+
+    async function stopVoiceCall() {
+      if (signalPollTimer) clearInterval(signalPollTimer); signalPollTimer = null;
+      if (signalChannel) { await supabaseClient.removeChannel(signalChannel); signalChannel = null; }
+      if (voicePeer) { voicePeer.close(); voicePeer = null; }
+      if (localVoiceStream) { localVoiceStream.getTracks().forEach(t => t.stop()); localVoiceStream = null; }
+      const audio = document.getElementById("remoteCallAudio"); audio.srcObject = null;
+      document.getElementById("endVoiceCall").hidden = true;
+      document.getElementById("callStatus").textContent = "Call ended.";
+    }
+    document.getElementById("endVoiceCall").addEventListener("click", stopVoiceCall);
+
+    async function startVoiceCall() {
+      const provider = window.kaamlySelectedProvider;
+      if (!provider) return;
+      const status = document.getElementById("callStatus");
+      document.getElementById("providerChatPanel").hidden = false;
+      status.textContent = "Voice call setup ho raha hai…";
+      try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error("Microphone access ke liye HTTPS website aur supported browser zaroori hai.");
+        const session = await getMySession();
+        const booking = await findSelectedBooking(provider);
+        await stopVoiceCall();
+        activeChatBookingId = booking.id;
+        localVoiceStream = await navigator.mediaDevices.getUserMedia({audio:true, video:false});
+        voicePeer = new RTCPeerConnection({iceServers:[{urls:"stun:stun.l.google.com:19302"}]});
+        localVoiceStream.getTracks().forEach(track => voicePeer.addTrack(track, localVoiceStream));
+        voicePeer.ontrack = event => { document.getElementById("remoteCallAudio").srcObject = event.streams[0]; };
+        const sendSignal = async payload => {
+          const {error} = await supabaseClient.from("call_signals").insert({booking_id:booking.id, sender_id:session.user.id, payload});
+          if (error) throw error;
+        };
+        voicePeer.onicecandidate = event => { if (event.candidate) sendSignal({type:"candidate", candidate:event.candidate.toJSON()}).catch(e=>status.textContent=e.message); };
+        signalChannel = supabaseClient.channel("kaamly-call-"+booking.id).on("postgres_changes", {event:"INSERT",schema:"public",table:"call_signals",filter:"booking_id=eq."+booking.id}, async payload => {
+          const sig=payload.new; if (sig.sender_id===session.user.id || !voicePeer) return;
+          try {
+            if (sig.payload.type==="offer" && !voicePeer.currentRemoteDescription) {
+              await voicePeer.setRemoteDescription(sig.payload.description);
+              const answer=await voicePeer.createAnswer(); await voicePeer.setLocalDescription(answer);
+              await sendSignal({type:"answer",description:voicePeer.localDescription.toJSON()});
+            } else if (sig.payload.type==="answer" && !voicePeer.currentRemoteDescription) {
+              await voicePeer.setRemoteDescription(sig.payload.description);
+            } else if (sig.payload.type==="candidate" && sig.payload.candidate) {
+              await voicePeer.addIceCandidate(sig.payload.candidate);
+            } else if (sig.payload.type==="hangup") { await stopVoiceCall(); }
+          } catch(e) { status.textContent="Call signal error: "+e.message; }
+        }).subscribe();
+        document.getElementById("endVoiceCall").hidden = false;
+        if (currentAccountRole === "customer") {
+          const offer=await voicePeer.createOffer(); await voicePeer.setLocalDescription(offer);
+          await sendSignal({type:"offer",description:voicePeer.localDescription.toJSON()});
+          status.textContent="Calling provider… Provider ko apne account se Voice call button dabana hoga. Agar provider online nahi hai to call connect nahi hogi.";
+        } else {
+          status.textContent="Microphone ready. Customer ki call offer ka intezar hai. Dono users ko call panel open rakhna hoga.";
+        }
+      } catch(error) { status.textContent=error.message || "Voice call start nahi ho saki."; await stopVoiceCall(); }
+    }
+    document.getElementById("startVoiceCall").addEventListener("click", startVoiceCall);
     document.getElementById("year").textContent = new Date().getFullYear();
     renderProviders();
     loadApprovedProviders();
@@ -1285,6 +1482,8 @@ if (category.includes("handyman")) return "From Rs 1,000";
     </div>
 
     <form id="bookingForm">
+      <input type="hidden" id="bookingProviderId" name="provider_id" value="">
+      <div id="selectedProviderNotice" class="notice" hidden></div>
       <label for="bookingName">Your name</label>
       <input id="bookingName" name="customer_name" required placeholder="Enter your name">
 
@@ -1363,6 +1562,7 @@ if (bookingForm) {
 
     const booking = {
       customer_id: sessionResult.session.user.id,
+      provider_id: document.getElementById("bookingProviderId").value || null,
       customer_name: document.getElementById("bookingName").value.trim(),
       customer_phone: document.getElementById("bookingPhone").value.trim(),
       service_name: document.getElementById("bookingService").value,
@@ -1373,16 +1573,21 @@ if (bookingForm) {
     };
 
     try {
-      const { error } = await supabaseClient
+      const { data: createdBooking, error } = await supabaseClient
         .from("bookings")
-        .insert([booking]);
+        .insert([booking])
+        .select("id, provider_id")
+        .single();
 
       if (error) {
         console.error(error);
-        status.textContent = "Booking failed. Please try again.";
+        status.textContent = error.message || "Booking failed. Please try again.";
       } else {
-        status.textContent = "Booking request submitted successfully!";
+        window.kaamlyLastBookingId = createdBooking.id;
+        status.textContent = "Booking request submitted successfully! Aap is booking ke zariye provider se private chat kar sakte hain.";
         bookingForm.reset();
+        document.getElementById("bookingProviderId").value = "";
+        document.getElementById("selectedProviderNotice").hidden = true;
       }
     } catch (error) {
       console.error(error);
