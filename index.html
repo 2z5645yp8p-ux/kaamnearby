@@ -107,6 +107,17 @@
     .contact-link { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; padding: 11px 14px; border-radius: 10px; background: var(--teal); color: white; font-weight: 800; }
     .contact-link.whatsapp { background: #16864a; }
     .contact-link[hidden] { display: none; }
+    .auth-panel { background: #f4faf5; border: 1px solid #d8e9dc; border-radius: 16px; padding: 18px; margin-bottom: 18px; }
+    .auth-panel h3 { margin: 0 0 8px; color: var(--navy); }
+    .auth-panel p { color: var(--muted); line-height: 1.5; font-size: .9rem; }
+    .auth-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .auth-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .auth-actions button { flex: 1 1 145px; }
+    .auth-status { margin-top: 12px; padding: 10px 12px; border-radius: 9px; background: #eef3f0; color: var(--ink); font-size: .9rem; line-height: 1.5; }
+    .auth-status:empty { display: none; }
+    .auth-status.error { background: #fff0ef; color: #8b2e26; }
+    .auth-status.success { background: #e8f7ef; color: #17633a; }
+    .auth-session { font-size: .9rem; font-weight: 700; color: var(--teal-dark); }
     .modal-actions { flex-wrap: wrap; }
     @media (max-width: 850px) {
       .hero-grid { grid-template-columns: 1fr; }
@@ -125,6 +136,7 @@
       .categories { grid-template-columns: repeat(2, 1fr); }
       .cards, .how-grid { grid-template-columns: 1fr; }
       .provider-form { grid-template-columns: 1fr; }
+      .auth-controls { grid-template-columns: 1fr; }
       .field.full { grid-column: auto; }
       .section-head, .listing-toolbar, .footer-row { align-items: start; flex-direction: column; }
       .listing-toolbar select { width: 100%; }
@@ -304,6 +316,37 @@
         <div class="section-head">
           <div><h2>List your service</h2><p>Are you a local provider? Add a sample listing to try the directory.</p></div>
         </div>
+        <div class="auth-panel" id="providerAuthPanel">
+          <h3>Provider sign in / registration</h3>
+          <p>Sign in with email and password, or request a one-time SMS code. Email registration may require clicking the confirmation link before signing in. Phone OTP works only after Phone Auth and an SMS provider are enabled in Supabase.</p>
+          <div class="auth-controls">
+            <div class="field">
+              <label for="authEmail">Email (for email option)</label>
+              <input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com">
+            </div>
+            <div class="field">
+              <label for="authPassword">Password (email option)</label>
+              <input id="authPassword" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters">
+            </div>
+            <div class="field full">
+              <label for="authPhone">Phone number (for SMS OTP, include country code)</label>
+              <input id="authPhone" type="tel" autocomplete="tel" placeholder="+923001234567">
+            </div>
+            <div class="field full" id="otpCodeField" hidden>
+              <label for="authOtpCode">SMS verification code</label>
+              <input id="authOtpCode" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="Enter the code received by SMS">
+            </div>
+          </div>
+          <div class="auth-actions">
+            <button class="primary-btn" id="emailSignUpBtn" type="button">Create email account</button>
+            <button class="secondary-btn" id="emailSignInBtn" type="button">Sign in with email</button>
+            <button class="secondary-btn" id="sendPhoneOtpBtn" type="button">Send phone OTP</button>
+            <button class="secondary-btn" id="verifyPhoneOtpBtn" type="button" hidden>Verify OTP</button>
+            <button class="secondary-btn" id="signOutBtn" type="button" hidden>Sign out</button>
+          </div>
+          <p class="auth-session" id="authSessionStatus" aria-live="polite">Sign in before submitting a provider listing.</p>
+          <div class="auth-status" id="authStatus" role="status" aria-live="polite"></div>
+        </div>
         <div class="provider-form-wrap">
           <form class="provider-form" id="providerForm">
             <div class="field">
@@ -353,7 +396,7 @@
             </div>
             <div class="field full">
               <button class="primary-btn" type="submit">Add my listing</button>
-              <p class="form-note">Your submission is sent to KaamNearby for review. It will not appear publicly until approved. Only submit contact details with the provider's permission.</p>
+              <p class="form-note">Sign in with a verified email account or verified phone first. Listings remain pending until the secure approval workflow is configured. Only submit contact details with the provider's permission.</p>
               <div class="form-status" id="formStatus" role="status" aria-live="polite"></div>
             </div>
           </form>
@@ -541,6 +584,151 @@ if (category.includes("handyman")) return "From Rs 1,000";
       return digits.length >= 10 ? digits : "";
     }
 
+    const authStatusEl = document.getElementById("authStatus");
+    const authSessionStatusEl = document.getElementById("authSessionStatus");
+    const otpCodeField = document.getElementById("otpCodeField");
+    const verifyPhoneOtpBtn = document.getElementById("verifyPhoneOtpBtn");
+    const signOutBtn = document.getElementById("signOutBtn");
+
+    function showAuthStatus(message, kind = "") {
+      authStatusEl.className = `auth-status${kind ? " " + kind : ""}`;
+      authStatusEl.textContent = message;
+    }
+
+    function updateAuthUI(session) {
+      const user = session && session.user;
+      if (user) {
+        const label = user.email || user.phone || "signed-in account";
+        authSessionStatusEl.textContent = `Signed in as ${label}. You can submit a listing.`;
+        signOutBtn.hidden = false;
+        document.getElementById("emailSignUpBtn").disabled = true;
+        document.getElementById("emailSignInBtn").disabled = true;
+        document.getElementById("sendPhoneOtpBtn").disabled = true;
+      } else {
+        authSessionStatusEl.textContent = "Sign in before submitting a provider listing.";
+        signOutBtn.hidden = true;
+        document.getElementById("emailSignUpBtn").disabled = false;
+        document.getElementById("emailSignInBtn").disabled = false;
+        document.getElementById("sendPhoneOtpBtn").disabled = false;
+      }
+    }
+
+    document.getElementById("emailSignUpBtn").addEventListener("click", async () => {
+      if (!supabaseClient) return showAuthStatus("Database connection is not configured.", "error");
+      const email = document.getElementById("authEmail").value.trim();
+      const password = document.getElementById("authPassword").value;
+      if (!email || password.length < 8) return showAuthStatus("Enter a valid email and a password of at least 8 characters.", "error");
+      const button = document.getElementById("emailSignUpBtn");
+      button.disabled = true;
+      showAuthStatus("Creating your email account…");
+      try {
+        const { data, error } = await supabaseClient.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: window.location.origin + window.location.pathname }
+        });
+        if (error) throw error;
+        if (data.session) {
+          updateAuthUI(data.session);
+          showAuthStatus("Email account created and signed in. You can submit your listing.", "success");
+        } else {
+          showAuthStatus("Account created. Check your email and click the confirmation link, then return here and sign in with your email and password.", "success");
+        }
+      } catch (error) {
+        console.error("Email sign-up error:", error);
+        showAuthStatus(error.message || "Could not create the account. Please try again.", "error");
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    document.getElementById("emailSignInBtn").addEventListener("click", async () => {
+      if (!supabaseClient) return showAuthStatus("Database connection is not configured.", "error");
+      const email = document.getElementById("authEmail").value.trim();
+      const password = document.getElementById("authPassword").value;
+      if (!email || !password) return showAuthStatus("Enter your email and password.", "error");
+      const button = document.getElementById("emailSignInBtn");
+      button.disabled = true;
+      showAuthStatus("Signing in…");
+      try {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        updateAuthUI(data.session);
+        showAuthStatus("You are signed in. You can submit your provider listing.", "success");
+      } catch (error) {
+        console.error("Email sign-in error:", error);
+        showAuthStatus(error.message || "Could not sign in. Confirm your email and check your password.", "error");
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    document.getElementById("sendPhoneOtpBtn").addEventListener("click", async () => {
+      if (!supabaseClient) return showAuthStatus("Database connection is not configured.", "error");
+      const phone = document.getElementById("authPhone").value.trim();
+      if (!/^\+[1-9]\d{7,14}$/.test(phone)) {
+        return showAuthStatus("Enter the phone number in international format, for example +923001234567.", "error");
+      }
+      const button = document.getElementById("sendPhoneOtpBtn");
+      button.disabled = true;
+      showAuthStatus("Requesting SMS code…");
+      try {
+        const { error } = await supabaseClient.auth.signInWithOtp({ phone });
+        if (error) throw error;
+        otpCodeField.hidden = false;
+        verifyPhoneOtpBtn.hidden = false;
+        showAuthStatus("If Phone Auth and SMS delivery are configured, a verification code has been sent.", "success");
+      } catch (error) {
+        console.error("Phone OTP request error:", error);
+        showAuthStatus(error.message || "Could not send SMS code. Check Supabase Phone Auth and SMS provider settings.", "error");
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    verifyPhoneOtpBtn.addEventListener("click", async () => {
+      if (!supabaseClient) return showAuthStatus("Database connection is not configured.", "error");
+      const phone = document.getElementById("authPhone").value.trim();
+      const token = document.getElementById("authOtpCode").value.trim();
+      if (!token) return showAuthStatus("Enter the SMS verification code.", "error");
+      verifyPhoneOtpBtn.disabled = true;
+      showAuthStatus("Verifying code…");
+      try {
+        const { data, error } = await supabaseClient.auth.verifyOtp({ phone, token, type: "sms" });
+        if (error) throw error;
+        updateAuthUI(data.session);
+        showAuthStatus("Phone number verified and signed in. You can submit your provider listing.", "success");
+      } catch (error) {
+        console.error("Phone OTP verification error:", error);
+        showAuthStatus(error.message || "Code verification failed. Check the code and try again.", "error");
+      } finally {
+        verifyPhoneOtpBtn.disabled = false;
+      }
+    });
+
+    signOutBtn.addEventListener("click", async () => {
+      try {
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) throw error;
+        updateAuthUI(null);
+        showAuthStatus("You have signed out.", "success");
+        otpCodeField.hidden = true;
+        verifyPhoneOtpBtn.hidden = true;
+      } catch (error) {
+        showAuthStatus(error.message || "Could not sign out.", "error");
+      }
+    });
+
+    if (supabaseClient) {
+      supabaseClient.auth.getSession().then(({ data, error }) => {
+        if (error) console.error("Could not load auth session:", error);
+        updateAuthUI(data && data.session);
+      });
+      supabaseClient.auth.onAuthStateChange((_event, session) => updateAuthUI(session));
+    } else {
+      updateAuthUI(null);
+    }
+
     document.getElementById("providerForm").addEventListener("submit", async event => {
       event.preventDefault();
       const form = event.currentTarget;
@@ -552,6 +740,13 @@ if (category.includes("handyman")) return "From Rs 1,000";
       if (!supabaseClient) {
         status.className = "form-status show error";
         status.textContent = "The online database is not connected yet. Add your Supabase project URL and publishable key in index.html, then publish the website again.";
+        return;
+      }
+      const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+      if (sessionError || !sessionData.session) {
+        status.className = "form-status show error";
+        status.textContent = "Please create an account or sign in above before submitting your listing.";
+        document.getElementById("providerAuthPanel").scrollIntoView({ behavior: "smooth", block: "center" });
         return;
       }
       if (normalizeWhatsAppNumber(phone).length < 10) {
