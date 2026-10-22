@@ -118,6 +118,8 @@
     .form-status.error { background: #fff0ef; color: #8b2e26; }
     .contact-link { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; padding: 11px 14px; border-radius: 10px; background: var(--teal); color: white; font-weight: 800; }
     .contact-link.whatsapp { background: #16864a; }
+    /* Simplified provider contact: show only Book, Chat and Close. */
+    #callProvider, #whatsappProvider, #startVoiceCall { display: none !important; }
     .contact-link[hidden] { display: none; }
     .auth-panel { background: #f4faf5; border: 1px solid #d8e9dc; border-radius: 16px; padding: 18px; margin-bottom: 18px; }
     .auth-panel h3 { margin: 0 0 8px; color: var(--navy); }
@@ -199,6 +201,8 @@
     footer { background: #12372d; }
     .contact-link { background: #16845b; }
     .contact-link.whatsapp { background: #16864a; }
+    /* Simplified provider contact: show only Book, Chat and Close. */
+    #callProvider, #whatsappProvider, #startVoiceCall { display: none !important; }
     .mobile-nav { display: none; }
     .section-anchor { scroll-margin-top: 92px; }
     /* Keep the provider sign-in area available without leaving a large empty gap. */
@@ -606,11 +610,8 @@
       <h3 id="modalTitle">Demo provider</h3>
       <p id="modalMessage">This is a sample listing, so it doesn't have a real contact number yet.</p>
       <div class="modal-actions">
-        <a class="contact-link" id="callProvider" href="#" hidden>Call provider</a>
-        <a class="contact-link whatsapp" id="whatsappProvider" href="#" target="_blank" rel="noopener noreferrer" hidden>WhatsApp</a>
         <button class="feature-btn" id="bookSelectedProvider" type="button">Book this provider</button>
-        <button class="feature-btn secondary" id="openProviderChat" type="button">Private chat</button>
-        <button class="feature-btn secondary" id="startVoiceCall" type="button">Voice call</button>
+        <button class="feature-btn secondary" id="openProviderChat" type="button">Chat</button>
         <button class="secondary-btn" id="closeModal" type="button">Close</button>
       </div>
       <div id="providerChatPanel" class="feature-panel" hidden>
@@ -777,7 +778,7 @@ if (category.includes("handyman")) return "From Rs 1,000";
           
           <p class="service-desc">${escapeHtml(provider.description)}</p>
           <div class="location">📍 ${escapeHtml(provider.area)}, Islamabad</div>
-          <button class="card-btn" type="button" data-provider-id="${escapeHtml(String(provider.id || ""))}">View contact / book / chat</button>
+          <button class="card-btn" type="button" data-provider-id="${escapeHtml(String(provider.id || ""))}">View provider</button>
         </article>
       `).join("");
 
