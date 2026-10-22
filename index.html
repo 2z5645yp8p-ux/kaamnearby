@@ -1334,35 +1334,43 @@ if (category.includes("handyman")) return "From Rs 1,000";
     async function loadApprovedProviders() {
       if (!supabaseClient) return;
       try {
+        // Read the available provider columns instead of naming optional columns in
+        // SELECT; a missing optional column (for example whatsapp/status) must not
+        // make the entire provider list fail. Deliberately do not filter by status.
         const { data, error } = await supabaseClient
           .from("providers")
-          .select("id, user_id, name, service_type, category, area, phone, whatsapp, description, status")
-          .order("name", { ascending: true });
+          .select("*");
         if (error) throw error;
-        communityProviders = (data || []).map(row => ({
-          id: row.id,
-          user_id: row.user_id || null,
-          name: row.name,
-          type: row.service_type,
-          category: row.category || "Home repairs",
-          area: row.area || "Islamabad",
-          phone: row.phone || "",
-          whatsapp: row.whatsapp || row.phone || "",
-          description: row.description || "",
-          icon: "🛠️",
-          isCommunity: true
-        }));
+        const rows = Array.isArray(data) ? data : [];
+        communityProviders = rows.map(row => {
+          const phone = String(row.phone ?? row.contact_phone ?? row.provider_phone ?? "");
+          return {
+            id: row.id ?? row.provider_id ?? `${row.user_id ?? row.name ?? "provider"}-${rows.indexOf(row)}`,
+            user_id: row.user_id || null,
+            name: String(row.name ?? row.provider_name ?? row.business_name ?? "Service Provider"),
+            type: String(row.service_type ?? row.service_name ?? row.type ?? row.service ?? "General service"),
+            category: String(row.category ?? row.provider_category ?? "Home repairs"),
+            area: String(row.area ?? row.provider_area ?? row.location ?? "Islamabad"),
+            phone,
+            whatsapp: String(row.whatsapp ?? row.whatsapp_number ?? phone),
+            description: String(row.description ?? row.details ?? row.experience ?? "Contact this provider for service details."),
+            icon: "🛠️",
+            isCommunity: true
+          };
+        });
         providers = [...communityProviders];
         renderProviders();
       } catch (error) {
         console.error("Kaamly load error:", error);
         providers = [];
-        cards.innerHTML = '<div class="empty"><h3>Providers could not be loaded</h3><p>Database access is blocked or the connection failed. Check the Supabase providers SELECT policy, then refresh.</p></div>';
+        const detail = String(error?.message || error || "Unknown database error");
+        cards.innerHTML = `<div class="empty"><h3>Providers could not be loaded</h3><p>Supabase returned an error. Check the providers table SELECT policy (RLS) and table columns.</p><p><strong>Technical detail:</strong> ${escapeHtml(detail)}</p></div>`;
         resultsCount.textContent = "Provider list unavailable";
       }
     }
 
     function escapeHtml(value) {
+      value = String(value ?? "");
       return value.replace(/[&<>"']/g, character => ({
         "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
       }[character]));
