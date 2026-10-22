@@ -630,46 +630,41 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // Kaamly startup: first visit only = 3-second logo -> intro -> Continue.
-    // Once Continue is pressed, reloads/auth changes must never restart the intro.
+    // Kaamly startup: always show 3-second logo -> services intro -> Continue.
+    // The old localStorage check skipped both screens on later visits, which
+    // made it look as if the logo and Continue button had disappeared.
     const splashScreen = document.getElementById("splashScreen");
     const serviceIntro = document.getElementById("serviceIntro");
     const serviceIntroContinue = document.getElementById("serviceIntroContinue");
     const authGate = document.getElementById("authGate");
-    let kaamlyIntroAlreadySeen = false;
-    try {
-      kaamlyIntroAlreadySeen = localStorage.getItem("kaamly_intro_completed_v1") === "yes";
-    } catch (storageError) {
-      console.warn("Kaamly intro preference could not be read; using this page session only.", storageError);
-    }
-    window.kaamlyIntroFinished = kaamlyIntroAlreadySeen;
+    window.kaamlyIntroFinished = false;
 
-    if (kaamlyIntroAlreadySeen) {
-      // Skip splash and intro on refresh, login, signup, or return visits.
+    if (splashScreen) {
+      splashScreen.classList.remove("splash-hide");
+      splashScreen.hidden = false;
+    }
+    if (serviceIntro) {
+      serviceIntro.hidden = true;
+      serviceIntro.classList.remove("intro-hide");
+    }
+    if (authGate) authGate.hidden = true;
+
+    window.setTimeout(() => {
       if (splashScreen) splashScreen.classList.add("splash-hide");
       if (serviceIntro) {
-        serviceIntro.hidden = true;
-        serviceIntro.classList.add("intro-hide");
+        serviceIntro.hidden = false;
+        serviceIntro.classList.remove("intro-hide");
       }
-      if (authGate && document.body.classList.contains("auth-locked")) authGate.hidden = false;
-    } else {
-      window.setTimeout(() => {
-        if (splashScreen) splashScreen.classList.add("splash-hide");
-        if (serviceIntro) {
-          serviceIntro.hidden = false;
-          serviceIntro.classList.remove("intro-hide");
-        }
-      }, 3000);
-    }
+    }, 3000);
 
     if (serviceIntroContinue) {
       serviceIntroContinue.addEventListener("click", () => {
+        window.kaamlyIntroFinished = true;
+        if (authGate && document.body.classList.contains("auth-locked")) {
+          authGate.hidden = false;
+        }
         if (serviceIntro) {
           serviceIntro.classList.add("intro-hide");
-          window.kaamlyIntroFinished = true;
-          try { localStorage.setItem("kaamly_intro_completed_v1", "yes"); }
-          catch (storageError) { console.warn("Could not save Kaamly intro preference.", storageError); }
-          if (authGate && document.body.classList.contains("auth-locked")) authGate.hidden = false;
           window.setTimeout(() => { serviceIntro.hidden = true; }, 450);
         }
       }, { once: true });
