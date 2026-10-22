@@ -119,7 +119,7 @@
     .contact-link { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; padding: 11px 14px; border-radius: 10px; background: var(--teal); color: white; font-weight: 800; }
     .contact-link.whatsapp { background: #16864a; }
     /* Simplified provider contact: show only Book, Chat and Close. */
-    #callProvider, #whatsappProvider, #startVoiceCall { display: none !important; }
+    #whatsappProvider, #startVoiceCall { display: none !important; }
     .contact-link[hidden] { display: none; }
     .auth-panel { background: #f4faf5; border: 1px solid #d8e9dc; border-radius: 16px; padding: 18px; margin-bottom: 18px; }
     .auth-panel h3 { margin: 0 0 8px; color: var(--navy); }
@@ -202,7 +202,7 @@
     .contact-link { background: #16845b; }
     .contact-link.whatsapp { background: #16864a; }
     /* Simplified provider contact: show only Book, Chat and Close. */
-    #callProvider, #whatsappProvider, #startVoiceCall { display: none !important; }
+    #whatsappProvider, #startVoiceCall { display: none !important; }
     .mobile-nav { display: none; }
     .section-anchor { scroll-margin-top: 92px; }
     /* Keep the provider sign-in area available without leaving a large empty gap. */
@@ -437,7 +437,7 @@
           </select>
         </div>
         <div class="cards" id="providerCards"></div>
-        <div class="notice"><strong>Safety tip:</strong> Only approved provider listings from the database are shown. Confirm identity, price and service details before hiring anyone.</div>
+        <div class="notice"><strong>Safety tip:</strong> Confirm the provider’s identity, service details and price before hiring.</div>
       </div>
     </section>
 
@@ -611,6 +611,7 @@
       <p id="modalMessage">This is a sample listing, so it doesn't have a real contact number yet.</p>
       <div class="modal-actions">
         <button class="feature-btn" id="bookSelectedProvider" type="button">Book this provider</button>
+        <a class="feature-btn secondary" id="callProvider" href="#" hidden>Call provider</a>
         <button class="feature-btn secondary" id="openProviderChat" type="button">Chat</button>
         <button class="secondary-btn" id="closeModal" type="button">Close</button>
       </div>
@@ -671,7 +672,7 @@
       ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
       : null;
 
-    // Public listings come only from approved Supabase provider records.
+    // Show provider rows returned by Supabase. Visibility is controlled by the table RLS policy.
     let communityProviders = [];
     let providers = [];
 
@@ -766,13 +767,13 @@ if (category.includes("handyman")) return "From Rs 1,000";
       }
       resultsCount.textContent = `Showing ${filtered.length} ${filtered.length === 1 ? "provider" : "providers"}${preferredArea ? ` · ${preferredArea} providers prioritized` : ""}`;
       if (!filtered.length) {
-        cards.innerHTML = '<div class="empty"><h3>No matching listings</h3><p>Try another keyword, category, or Islamabad area.</p></div>';
+        cards.innerHTML = '<div class="empty"><h3>No matching listings</h3><p>No providers matched this category or search. Try another category or area.</p></div>';
         return;
       }
 
       cards.innerHTML = filtered.map((provider, index) => `
         <article class="service-card">
-          <div class="card-top"><div class="service-icon" aria-hidden="true">${provider.icon || "🛠️"}</div><span class="demo-tag">APPROVED LISTING</span></div>
+          <div class="card-top"><div class="service-icon" aria-hidden="true">${provider.icon || "🛠️"}</div><span class="demo-tag">SERVICE PROVIDER</span></div>
           <h3>${escapeHtml(provider.name)}</h3>
           <p class="service-price">Estimated rate: ${getEstimatedRate(provider)}</p>
           
@@ -805,7 +806,7 @@ if (category.includes("handyman")) return "From Rs 1,000";
       const whatsapp = (provider.whatsapp || phone).trim();
 
       if (phone) {
-        modalMessage.textContent = `${provider.type} · ${provider.area}, Islamabad. Contact this provider directly. Please confirm service details and pricing before booking.`;
+        modalMessage.textContent = `${provider.type} · ${provider.area}, Islamabad. Confirm service details and pricing before booking.`;
         callLink.href = `tel:${phone.replace(/[^+\d]/g, "")}`;
         callLink.hidden = false;
       } else {
@@ -1336,7 +1337,7 @@ if (category.includes("handyman")) return "From Rs 1,000";
         const { data, error } = await supabaseClient
           .from("providers")
           .select("id, user_id, name, service_type, category, area, phone, whatsapp, description, status")
-          .eq("status", "approved");
+          .order("name", { ascending: true });
         if (error) throw error;
         communityProviders = (data || []).map(row => ({
           id: row.id,
@@ -1355,6 +1356,9 @@ if (category.includes("handyman")) return "From Rs 1,000";
         renderProviders();
       } catch (error) {
         console.error("Kaamly load error:", error);
+        providers = [];
+        cards.innerHTML = '<div class="empty"><h3>Providers could not be loaded</h3><p>Database access is blocked or the connection failed. Check the Supabase providers SELECT policy, then refresh.</p></div>';
+        resultsCount.textContent = "Provider list unavailable";
       }
     }
 
