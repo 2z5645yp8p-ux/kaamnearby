@@ -627,7 +627,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // Show logo for 7 seconds, then keep the services intro visible until Continue is pressed.
+    // Show logo for 4 seconds, then keep the services intro visible until Continue is pressed.
     const splashScreen = document.getElementById("splashScreen");
     const serviceIntro = document.getElementById("serviceIntro");
     const serviceIntroContinue = document.getElementById("serviceIntroContinue");
@@ -637,7 +637,7 @@
         serviceIntro.hidden = false;
         serviceIntro.classList.remove("intro-hide");
       }
-    }, 7000);
+    }, 4000);
     if (serviceIntroContinue) {
       serviceIntroContinue.addEventListener("click", () => {
         if (serviceIntro) {
