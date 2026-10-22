@@ -237,6 +237,11 @@
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }
 
 
+    .auth-role-picker { display: grid; gap: 10px; margin: 16px 0; }
+    .auth-role-picker p { margin: 0 0 4px; color: var(--navy); }
+    .auth-role-picker .role-choice { width: 100%; min-height: 46px; }
+    .text-btn { border: 0; background: transparent; color: var(--navy); text-decoration: underline; padding: 9px; cursor: pointer; font-weight: 700; }
+    .signup-step-label { padding: 10px 12px; border-radius: 10px; background: #eef8f2; color: #145c3e; font-weight: 700; }
     [hidden] { display: none !important; }
     body.auth-locked > :not(#authGate) { visibility: hidden !important; pointer-events: none !important; }
     #authGate { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; overflow-y: auto; padding: 24px 14px; background: radial-gradient(circle at 85% 10%, #d6f2ee 0, transparent 34%), linear-gradient(135deg, #f4fbfb 0%, #f6f9fb 65%); }
@@ -259,7 +264,7 @@
     <div class="auth-gate-card">
       <div class="auth-gate-brand"><span class="brand-mark">⌂</span><span>KaamNearby</span></div>
       <h1 id="authGateTitle">Sign in to get started</h1>
-      <p>Find local services or offer your skills. Sign in to continue, or create a customer/provider account.</p>
+      <p>Sign in to continue, or create a new account as a customer or service provider.</p>
       <div id="authGatePanelSlot"></div>
       <p class="auth-gate-help">Your account type is checked after sign-in. Admin access remains in the separate Admin Dashboard.</p>
     </div>
@@ -345,7 +350,7 @@
         <div class="auth-panel" id="providerAuthPanel">
           <h3>KaamNearby Account</h3>
           <p>Use one login field for your email or phone number. When you sign in, KaamNearby checks your saved account role and directs you to the right section.</p>
-          <div class="auth-controls">
+          <div class="auth-controls" id="authControls">
             <div class="field full">
               <label for="authIdentifier">Phone number or email</label>
               <input id="authIdentifier" type="text" autocomplete="username" placeholder="Email or +923001234567" required>
@@ -354,14 +359,21 @@
               <label for="authPassword">Password</label>
               <input id="authPassword" type="password" autocomplete="current-password" minlength="8" placeholder="Enter your password" required>
             </div>
-            <div class="field full" id="signupRoleField">
-              <label for="signupRole">Create account as</label>
+            <div class="field full" id="signupRoleField" hidden>
+              <label for="signupRole">When creating an account, I am a</label>
               <select id="signupRole">
                 <option value="customer">Customer — I need a service</option>
                 <option value="provider">Provider — I offer a service</option>
               </select>
             </div>
           </div>
+          <div id="signupRolePicker" class="auth-role-picker" hidden>
+            <p><strong>Choose account type</strong></p>
+            <button class="secondary-btn role-choice" id="chooseCustomerRole" type="button">I am a Customer</button>
+            <button class="secondary-btn role-choice" id="chooseProviderRole" type="button">I am a Service Provider</button>
+            <button class="text-btn" id="cancelSignupRole" type="button">Back to sign in</button>
+          </div>
+          <p id="signupStepLabel" class="signup-step-label" hidden></p>
           <div class="auth-actions">
             <button class="primary-btn" id="emailSignInBtn" type="button">Sign in</button>
             <button class="secondary-btn" id="emailSignUpBtn" type="button">Create account</button>
@@ -369,6 +381,15 @@
           </div>
           <p class="auth-session" id="authSessionStatus" aria-live="polite">Sign in or create a customer/provider account.</p>
           <div class="auth-status" id="authStatus" role="status" aria-live="polite"></div>
+          <div id="phoneOtpPanel" class="auth-panel" hidden>
+            <div class="field full">
+              <label for="phoneOtpCode">SMS verification code</label>
+              <input id="phoneOtpCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="Enter the code sent by SMS">
+            </div>
+            <div class="auth-actions">
+              <button class="primary-btn" id="verifyPhoneOtpBtn" type="button">Verify phone number</button>
+            </div>
+          </div>
         </div>
         <div class="provider-form-wrap" id="providerFormWrap">
           <form class="provider-form" id="providerForm">
@@ -623,6 +644,7 @@ if (category.includes("handyman")) return "From Rs 1,000";
     const authSessionStatusEl = document.getElementById("authSessionStatus");
     const signOutBtn = document.getElementById("signOutBtn");
     let currentAccountRole = null;
+    let pendingPhoneSignup = null;
 
     function showAuthStatus(message, kind = "") {
       authStatusEl.className = `auth-status${kind ? " " + kind : ""}`;
@@ -649,8 +671,16 @@ if (category.includes("handyman")) return "From Rs 1,000";
         signOutBtn.hidden = true;
         document.getElementById("emailSignInBtn").disabled = false;
         document.getElementById("emailSignUpBtn").disabled = false;
-        document.getElementById("signupRoleField").hidden = false;
+        document.getElementById("signupRoleField").hidden = true;
+        if (typeof rolePickerEl !== "undefined") rolePickerEl.hidden = true;
+        if (typeof authControlsEl !== "undefined") authControlsEl.hidden = false;
+        if (typeof signupStepLabelEl !== "undefined") signupStepLabelEl.hidden = true;
+        if (typeof signInButtonEl !== "undefined") signInButtonEl.hidden = false;
+        if (typeof signUpButtonEl !== "undefined") { signUpButtonEl.hidden = false; signUpButtonEl.textContent = "Create account"; }
+        if (typeof selectedSignupRole !== "undefined") selectedSignupRole = null;
         document.getElementById("providerFormWrap").hidden = false;
+        document.getElementById("phoneOtpPanel").hidden = true;
+        pendingPhoneSignup = null;
         return;
       }
       signOutBtn.hidden = false;
@@ -685,8 +715,8 @@ if (category.includes("handyman")) return "From Rs 1,000";
             document.getElementById("booking").scrollIntoView({ behavior: "smooth", block: "start" });
             showAuthStatus("Customer account verified. You can request a service below.", "success");
           } else {
-  window.location.href = "https://2z5645yp8p-ux.github.io/kaamnearby-admin/";
-}
+            showAuthStatus("Administrator account verified. Opening the Admin Dashboard…", "success");
+            window.location.href = "https://2z5645yp8p-ux.github.io/kaamnearby-admin/";
           }
         }
       } catch (error) {
@@ -697,11 +727,45 @@ if (category.includes("handyman")) return "From Rs 1,000";
       }
     }
 
-    document.getElementById("emailSignUpBtn").addEventListener("click", async () => {
+    let selectedSignupRole = null;
+    const authControlsEl = document.getElementById("authControls");
+    const rolePickerEl = document.getElementById("signupRolePicker");
+    const signInButtonEl = document.getElementById("emailSignInBtn");
+    const signUpButtonEl = document.getElementById("emailSignUpBtn");
+    const signupStepLabelEl = document.getElementById("signupStepLabel");
+
+    function beginSignup() {
+      selectedSignupRole = null;
+      authControlsEl.hidden = true;
+      rolePickerEl.hidden = false;
+      signupStepLabelEl.hidden = true;
+      signInButtonEl.hidden = true;
+      signUpButtonEl.hidden = true;
+      document.getElementById("authIdentifier").required = false;
+      document.getElementById("authPassword").required = false;
+      showAuthStatus("Pehle apna account type select karein.");
+    }
+    function selectSignupRole(role) {
+      selectedSignupRole = role;
+      document.getElementById("signupRole").value = role;
+      rolePickerEl.hidden = true;
+      authControlsEl.hidden = false;
+      signupStepLabelEl.hidden = false;
+      signupStepLabelEl.textContent = role === "customer" ? "Customer account — email/phone aur password enter karein." : "Service Provider account — email/phone aur password enter karein.";
+      signInButtonEl.hidden = true;
+      signUpButtonEl.hidden = false;
+      signUpButtonEl.textContent = "Create " + (role === "customer" ? "Customer" : "Provider") + " Account";
+      document.getElementById("authIdentifier").required = true;
+      document.getElementById("authPassword").required = true;
+      document.getElementById("authIdentifier").focus();
+      showAuthStatus("");
+    }
+    signUpButtonEl.addEventListener("click", async () => {
+      if (!selectedSignupRole) { beginSignup(); return; }
       if (!supabaseClient) return showAuthStatus("Database connection is not configured.", "error");
       const identifier = normalizeIdentifier(document.getElementById("authIdentifier").value);
       const password = document.getElementById("authPassword").value;
-      const role = document.getElementById("signupRole").value;
+      const role = selectedSignupRole || document.getElementById("signupRole").value;
       if (!identifier) return showAuthStatus("Enter a valid email address or phone number such as +923001234567.", "error");
       if (password.length < 8) return showAuthStatus("Password must contain at least 8 characters.", "error");
       const button = document.getElementById("emailSignUpBtn");
@@ -714,11 +778,16 @@ if (category.includes("handyman")) return "From Rs 1,000";
           : await supabaseClient.auth.signUp({ phone: identifier.phone, password, options: { data: { role } } });
         if (error) throw error;
         if (data.session) {
+          document.getElementById("phoneOtpPanel").hidden = true;
           await loadAccountRole(data.session, true);
+        } else if (identifier.email) {
+          showAuthStatus("Account created. Check your email and click the confirmation link. You will return to KaamNearby; then sign in if prompted.", "success");
         } else {
-          showAuthStatus(identifier.email
-            ? "Account created. Check your email and confirm it, then sign in here."
-            : "Account request created. Complete the SMS verification required by your Supabase Phone Auth settings, then sign in with this phone number and password.", "success");
+          pendingPhoneSignup = { phone: identifier.phone, role };
+          document.getElementById("phoneOtpPanel").hidden = false;
+          document.getElementById("phoneOtpCode").value = "";
+          showAuthStatus("Account created. Enter the SMS verification code sent to your phone to finish creating the account.", "success");
+          document.getElementById("phoneOtpCode").focus();
         }
       } catch (error) {
         console.error("Account creation error:", error);
@@ -728,7 +797,49 @@ if (category.includes("handyman")) return "From Rs 1,000";
       }
     });
 
+    document.getElementById("chooseCustomerRole").addEventListener("click", () => selectSignupRole("customer"));
+    document.getElementById("chooseProviderRole").addEventListener("click", () => selectSignupRole("provider"));
+    document.getElementById("cancelSignupRole").addEventListener("click", () => {
+      selectedSignupRole = null;
+      rolePickerEl.hidden = true;
+      authControlsEl.hidden = false;
+      signupStepLabelEl.hidden = true;
+      signInButtonEl.hidden = false;
+      signUpButtonEl.hidden = false;
+      signUpButtonEl.textContent = "Create account";
+      document.getElementById("authIdentifier").required = true;
+      document.getElementById("authPassword").required = true;
+      showAuthStatus("Sign in or create an account.");
+    });
+
+    document.getElementById("verifyPhoneOtpBtn").addEventListener("click", async () => {
+      if (!supabaseClient) return showAuthStatus("Database connection is not configured.", "error");
+      if (!pendingPhoneSignup) return showAuthStatus("Please create your phone account first.", "error");
+      const token = document.getElementById("phoneOtpCode").value.trim();
+      if (!token) return showAuthStatus("Enter the SMS verification code.", "error");
+      const button = document.getElementById("verifyPhoneOtpBtn");
+      button.disabled = true;
+      showAuthStatus("Verifying your phone number…");
+      try {
+        const { data, error } = await supabaseClient.auth.verifyOtp({
+          phone: pendingPhoneSignup.phone,
+          token,
+          type: "sms"
+        });
+        if (error) throw error;
+        pendingPhoneSignup = null;
+        document.getElementById("phoneOtpPanel").hidden = true;
+        await loadAccountRole(data.session, true);
+      } catch (error) {
+        console.error("Phone verification error:", error);
+        showAuthStatus(error.message || "Could not verify the code. Check it and try again.", "error");
+      } finally {
+        button.disabled = false;
+      }
+    });
+
     document.getElementById("emailSignInBtn").addEventListener("click", async () => {
+      selectedSignupRole = null;
       if (!supabaseClient) return showAuthStatus("Database connection is not configured.", "error");
       const identifier = normalizeIdentifier(document.getElementById("authIdentifier").value);
       const password = document.getElementById("authPassword").value;
@@ -768,11 +879,13 @@ if (category.includes("handyman")) return "From Rs 1,000";
     if (supabaseClient) {
       supabaseClient.auth.getSession().then(async ({ data, error }) => {
         if (error) console.error("Could not load auth session:", error);
-        await loadAccountRole(data && data.session, false);
+        // Route a saved session on refresh, including admin accounts.
+        await loadAccountRole(data && data.session, true);
       });
-      supabaseClient.auth.onAuthStateChange((_event, session) => {
-        // Defer the profile query to avoid doing Supabase work inside the auth callback.
-        Promise.resolve().then(() => loadAccountRole(session, false));
+      supabaseClient.auth.onAuthStateChange((event, session) => {
+        // Defer profile reads until after the auth callback has returned.
+        const shouldRoute = event === "SIGNED_IN";
+        Promise.resolve().then(() => loadAccountRole(session, shouldRoute));
       });
     } else {
       loadAccountRole(null, false);
