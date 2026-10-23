@@ -848,28 +848,27 @@ if (filtered.length === 0) {
       document.getElementById("modalTitle").textContent = provider.name;
       const modalMessage = document.getElementById("modalMessage");
       const callLink = document.getElementById("callProvider");
-      const whatsappLink = document.getElementById("whatsappProvider");
+      const whatsappLink = null;
       const phone = (provider.phone || "").trim();
       const whatsapp = (provider.whatsapp || phone).trim();
 
       if (phone) {
         modalMessage.textContent = `${provider.type} · ${provider.area}, Islamabad. Confirm service details and pricing before booking.`;
-        callLink.href = `tel:${phone.replace(/[^+\d]/g, "")}`;
-        callLink.hidden = false;
+       if (callLink) {
+  callLink.href = `tel:${phone.replace(/[^+\d]/g, "")}`;
+  callLink.hidden = false;
+}
+      
       } else {
         modalMessage.textContent = `${provider.type} · ${provider.area}, Islamabad. This provider has no public phone number listed. Please choose another provider or contact support.`;
-        callLink.hidden = true;
-        callLink.removeAttribute("href");
+if (callLink) {
+  callLink.hidden = true;
+  callLink.removeAttribute("href");
+}
       }
 
-      const waNumber = normalizeWhatsAppNumber(whatsapp);
-      if (waNumber) {
-        whatsappLink.href = `https://wa.me/${waNumber}`;
-        whatsappLink.hidden = false;
-      } else {
-        whatsappLink.hidden = true;
-        whatsappLink.removeAttribute("href");
-      }
+     // WhatsApp button is not used in the provider contact modal.
+      
       modal.classList.add("open");
       document.getElementById("closeModal").focus();
     });
