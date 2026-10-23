@@ -725,11 +725,22 @@ if (category.includes("handyman")) return "From Rs 1,000";
 }
     let selectedCategory = "";
 
+    function normalizeCategory(value) {
+      const text = String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+      if (/plumb|electric|ac repair|air condition|carpent|paint|handyman|appliance|home repair|wiring|repair/.test(text)) return "home repairs";
+      if (/clean|maid|housekeep|janitor/.test(text)) return "cleaning";
+      if (/beauty|salon|make up|hair cut|hairdresser|groom|bridal/.test(text)) return "beauty";
+      if (/moving|mover|packing|shifting|furniture transport/.test(text)) return "moving";
+      if (/tutor|teach|education|lesson/.test(text)) return "education";
+      if (/computer|technology|tech support|it repair/.test(text)) return "technology";
+      return text;
+    }
+
     function getProviderBroadCategory(provider) {
       const type = String(provider.type || provider.service_type || "").toLowerCase();
       const category = String(provider.category || "").toLowerCase();
       const description = String(provider.description || "").toLowerCase();
-      const serviceText = `${type} ${description}`;
+      const serviceText = `${type} ${description} ${category}`;
       // Prefer the provider's specific service type over a broad/legacy category value.
       if (/plumb|electric|ac repair|air.?condition|carpent|paint|handyman|appliance|home repair|wiring/.test(serviceText)) return "Home repairs";
       if (/clean|maid|housekeeping|janitor/.test(serviceText)) return "Cleaning";
@@ -780,7 +791,7 @@ if (category.includes("handyman")) return "From Rs 1,000";
         const searchable = `${provider.name} ${provider.type} ${provider.category} ${provider.area} ${provider.description}`.toLowerCase();
         return (!query || searchable.includes(query)) &&
           (!area || provider.area === area) &&
-          (!selectedCategory || getProviderBroadCategory(provider) === selectedCategory) &&
+          (!selectedCategory || normalizeCategory(getProviderBroadCategory(provider)) === normalizeCategory(selectedCategory)) &&
           matchesService(provider, selectedService);
       });
 
@@ -795,7 +806,7 @@ if (category.includes("handyman")) return "From Rs 1,000";
       }
       resultsCount.textContent = `Showing ${filtered.length} ${filtered.length === 1 ? "provider" : "providers"}${preferredArea ? ` · ${preferredArea} providers prioritized` : ""}`;
       if (!filtered.length) {
-        cards.innerHTML = '<div class="empty"><h3>No matching listings</h3><p>No providers matched this category or search. Try another category or area.</p></div>';
+        cards.innerHTML = '<div class="empty"><h3>No matching listings</h3><p>No providers matched the current filters. Choose “All services” to clear the service/category filter, or clear your search and choose “All Islamabad areas”.</p></div>';
         return;
       }
 
@@ -1430,7 +1441,14 @@ if (category.includes("handyman")) return "From Rs 1,000";
     });
     searchInput.addEventListener("input", renderProviders);
     areaFilter.addEventListener("change", renderProviders);
-    if (serviceFilter) serviceFilter.addEventListener("change", renderProviders);
+    if (serviceFilter) serviceFilter.addEventListener("change", () => {
+      // "All services" must truly clear any category-card filter left from an earlier visit.
+      if (!serviceFilter.value) {
+        selectedCategory = "";
+        categoryButtons.forEach(item => item.classList.remove("active"));
+      }
+      renderProviders();
+    });
     if (preferredAreaSort) preferredAreaSort.addEventListener("change", renderProviders);
 
     categoryButtons.forEach(button => {
