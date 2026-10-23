@@ -1581,8 +1581,10 @@ if (category.includes("handyman")) return "From Rs 1,000";
         document.getElementById("chatStatus").textContent = error.message || "Chat load nahi ho saki. SQL setup aur RLS policies check karein.";
       }
     }
-    document.getElementById("openProviderChat").addEventListener("click", openPrivateChat);
-    document.getElementById("chatMessageForm").addEventListener("submit", async event => {
+const openProviderChatButton = document.getElementById("openProviderChat");
+if (openProviderChatButton) {
+  openProviderChatButton.addEventListener("click", openPrivateChat);
+}
       event.preventDefault();
       const input = document.getElementById("chatMessageInput");
       const body = input.value.trim(); if (!body || !activeChatBookingId) return;
