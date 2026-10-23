@@ -787,13 +787,32 @@ if (category.includes("handyman")) return "From Rs 1,000";
       const query = searchInput.value.trim().toLowerCase();
       const area = areaFilter.value;
       const selectedService = serviceFilter ? serviceFilter.value : "";
-      const filtered = providers.filter(provider => {
+      let filtered = providers.filter(provider => {
         const searchable = `${provider.name} ${provider.type} ${provider.category} ${provider.area} ${provider.description}`.toLowerCase();
-        return (!query || searchable.includes(query)) &&
-          (!area || provider.area === area) &&
-          (!selectedCategory || normalizeCategory(getProviderBroadCategory(provider)) === normalizeCategory(selectedCategory)) &&
-          matchesService(provider, selectedService);
+        const providerCategory = normalizeCategory(getProviderBroadCategory(provider));
+        const wantedCategory = normalizeCategory(selectedCategory);
+        const categoryMatches = !wantedCategory || providerCategory === wantedCategory ||
+          (wantedCategory === "home repairs" && /plumb|electric|ac repair|air.?condition|carpent|paint|handyman|appliance|repair|wiring/.test(searchable)) ||
+          (wantedCategory === "cleaning" && /clean|maid|housekeep/.test(searchable)) ||
+          (wantedCategory === "beauty" && /beauty|salon|make.?up|hair.?cut|groom|bridal/.test(searchable)) ||
+          (wantedCategory === "moving" && /moving|mover|packing|shifting|transport/.test(searchable));
+        const areaMatches = !area || String(provider.area || "").trim().toLowerCase() === String(area).trim().toLowerCase() ||
+          (String(area).toLowerCase() === "bahria" && /bahria/i.test(String(provider.area || "")));
+        return (!query || searchable.includes(query)) && areaMatches && categoryMatches && matchesService(provider, selectedService);
       });
+
+      // Recovery: filters must never make approved providers disappear completely.
+      // If any stale or mismatched filter hides every listing, reset filters and show the approved rows.
+      let recoveredCategoryFilter = false;
+      if (filtered.length === 0 && providers.length > 0) {
+        filtered = [...providers];
+        searchInput.value = "";
+        areaFilter.value = "";
+        if (serviceFilter) serviceFilter.value = "";
+        selectedCategory = "";
+        categoryButtons.forEach(item => item.classList.remove("active"));
+        recoveredCategoryFilter = true;
+      }
 
       // This is area-based prioritization, not live GPS distance. Providers in the selected area appear first.
       const preferredArea = preferredAreaSort ? preferredAreaSort.value : "";
@@ -806,11 +825,14 @@ if (category.includes("handyman")) return "From Rs 1,000";
       }
       resultsCount.textContent = `Showing ${filtered.length} ${filtered.length === 1 ? "provider" : "providers"}${preferredArea ? ` · ${preferredArea} providers prioritized` : ""}`;
       if (!filtered.length) {
-        cards.innerHTML = '<div class="empty"><h3>No matching listings</h3><p>No providers matched the current filters. Choose “All services” to clear the service/category filter, or clear your search and choose “All Islamabad areas”.</p></div>';
+        cards.innerHTML = '<div class="empty"><h3>No matching listings</h3><p>No approved providers match the current search, service and area filters. Clear the search or choose All services and All Islamabad areas.</p></div>';
         return;
       }
 
-      cards.innerHTML = filtered.map((provider, index) => `
+      const recoveryNotice = recoveredCategoryFilter
+        ? '<div class="notice" role="status" style="margin-bottom:12px">No exact match was found in the selected category, so all approved providers are shown instead.</div>'
+        : "";
+      cards.innerHTML = recoveryNotice + filtered.map((provider, index) => `
         <article class="service-card">
           <div class="card-top"><div class="service-icon" aria-hidden="true">${provider.icon || "🛠️"}</div><span class="demo-tag">SERVICE PROVIDER</span></div>
           <h3>${escapeHtml(provider.name)}</h3>
