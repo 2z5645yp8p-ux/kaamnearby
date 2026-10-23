@@ -1585,17 +1585,45 @@ if (category.includes("handyman")) return "From Rs 1,000";
 if (openProviderChatButton) {
   openProviderChatButton.addEventListener("click", openPrivateChat);
 }
-    document.getElementById("chatMessageForm").addEventListener("submit", async event => {
-      event.preventDefault();
-      const input = document.getElementById("chatMessageInput");
-      const body = input.value.trim(); if (!body || !activeChatBookingId) return;
-      try {
-        const session = await getMySession();
-        const {data, error} = await supabaseClient.from("chat_messages").insert({booking_id:activeChatBookingId, sender_id:session.user.id, body}).select("id, booking_id, sender_id, body, created_at").single();
-        if (error) throw error;
-        addChatMessage(data, session.user.id); input.value = "";
-      } catch (error) { document.getElementById("chatStatus").textContent = error.message || "Message send nahi hua."; }
-    });
+  
+const chatMessageForm = document.getElementById("chatMessageForm");
+
+if (chatMessageForm) {
+  chatMessageForm.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const input = document.getElementById("chatMessageInput");
+    const body = input ? input.value.trim() : "";
+
+    if (!body || !activeChatBookingId || !input) return;
+
+    try {
+      const session = await getMySession();
+
+      const { data, error } = await supabaseClient
+        .from("chat_messages")
+        .insert({
+          booking_id: activeChatBookingId,
+          sender_id: session.user.id,
+          body
+        })
+        .select("id, booking_id, sender_id, body, created_at")
+        .single();
+
+      if (error) throw error;
+
+      addChatMessage(data, session.user.id);
+      input.value = "";
+    } catch (error) {
+      const chatStatus = document.getElementById("chatStatus");
+      if (chatStatus) {
+        chatStatus.textContent =
+          error.message || "Message send nahi hua.";
+      }
+    }
+  });
+}
+
 
     async function stopVoiceCall() {
       if (signalPollTimer) clearInterval(signalPollTimer); signalPollTimer = null;
