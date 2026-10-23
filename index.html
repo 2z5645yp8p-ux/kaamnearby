@@ -804,25 +804,10 @@ if (category.includes("handyman")) return "From Rs 1,000";
       // Recovery: filters must never make approved providers disappear completely.
       // If any stale or mismatched filter hides every listing, reset filters and show the approved rows.
       let recoveredCategoryFilter = false;
-      if (filtered.length === 0 && providers.length > 0) {
-        filtered = [...providers];
-        searchInput.value = "";
-        areaFilter.value = "";
-        if (serviceFilter) serviceFilter.value = "";
-        selectedCategory = "";
-        categoryButtons.forEach(item => item.classList.remove("active"));
-        recoveredCategoryFilter = true;
-      }
-
-      // This is area-based prioritization, not live GPS distance. Providers in the selected area appear first.
-      const preferredArea = preferredAreaSort ? preferredAreaSort.value : "";
-      if (preferredArea) {
-        filtered.sort((a, b) => {
-          const aRank = String(a.area || "").toLowerCase() === preferredArea.toLowerCase() ? 0 : 1;
-          const bRank = String(b.area || "").toLowerCase() === preferredArea.toLowerCase() ? 0 : 1;
-          return aRank - bRank;
-        });
-      }
+    // Do not show providers from other categories when there is no match.
+if (filtered.length === 0) {
+  recoveredCategoryFilter = false;
+}
       resultsCount.textContent = `Showing ${filtered.length} ${filtered.length === 1 ? "provider" : "providers"}${preferredArea ? ` · ${preferredArea} providers prioritized` : ""}`;
       if (!filtered.length) {
         cards.innerHTML = '<div class="empty"><h3>No matching listings</h3><p>No approved providers match the current search, service and area filters. Clear the search or choose All services and All Islamabad areas.</p></div>';
