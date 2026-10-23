@@ -808,6 +808,7 @@ if (category.includes("handyman")) return "From Rs 1,000";
 if (filtered.length === 0) {
   recoveredCategoryFilter = false;
 }
+   const preferredArea = preferredAreaSort ? preferredAreaSort.value : "";   
       resultsCount.textContent = `Showing ${filtered.length} ${filtered.length === 1 ? "provider" : "providers"}${preferredArea ? ` · ${preferredArea} providers prioritized` : ""}`;
       if (!filtered.length) {
         cards.innerHTML = '<div class="empty"><h3>No matching listings</h3><p>No approved providers match the current search, service and area filters. Clear the search or choose All services and All Islamabad areas.</p></div>';
