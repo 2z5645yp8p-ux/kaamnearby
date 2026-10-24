@@ -671,6 +671,32 @@
         </div>
       </div>
     </section>
+        </section>
+
+    <section id="customer-profile" class="section-anchor">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>My Profile</h2>
+            <p>Manage your Kaamly account.</p>
+          </div>
+        </div>
+
+        <div class="how-card" style="max-width:650px;margin:0 auto;padding:25px;border:1px solid #c9a44c;border-radius:18px;">
+          <h3>Welcome to Kaamly</h3>
+          <p><strong>Email:</strong> <span id="profileEmail">Loading...</span></p>
+          <p><strong>Account Type:</strong> <span id="profileRole">Loading...</span></p>
+
+          <button type="button" id="profileSignOut"
+            style="padding:12px 22px;border:0;border-radius:9px;background:#12372d;color:#d4af57;cursor:pointer;">
+            Sign Out
+          </button>
+
+          <p id="profileMessage"></p>
+        </div>
+      </div>
+    </section>
+  </main>
   </main>
 
 
@@ -678,6 +704,7 @@
     <a href="#browse"><span>⌕</span><span>Explore</span></a>
     <a href="#providers"><span>▦</span><span>Providers</span></a>
     <a href="#add-provider"><span>＋</span><span>List service</span></a>
+    <a href="#customer-profile"><span>♙</span><span>Profile</span></a>
   </nav>
 
   <footer>
@@ -1059,6 +1086,17 @@ if (callLink) {
           return;
         }
         currentAccountRole = profile.role;
+                const profileEmailEl = document.getElementById("profileEmail");
+        const profileRoleEl = document.getElementById("profileRole");
+
+        if (profileEmailEl) {
+          profileEmailEl.textContent = user.email || user.phone || "Not available";
+        }
+
+        if (profileRoleEl) {
+          profileRoleEl.textContent =
+            profile.role.charAt(0).toUpperCase() + profile.role.slice(1);
+        }
         setAuthGate(false);
         const label = user.email || user.phone || "your account";
         authSessionStatusEl.textContent = `Signed in as ${label} · Account type: ${profile.role}.`;
@@ -1357,7 +1395,15 @@ if (callLink) {
       }
     });
     document.getElementById("accountAction").addEventListener("click", () => signOutBtn.click());
+    const profileSignOutButton = document.getElementById("profileSignOut");
 
+    if (profileSignOutButton) {
+      profileSignOutButton.addEventListener("click", () => {
+        if (signOutBtn) {
+          signOutBtn.click();
+        }
+      });
+    }
     if (supabaseClient) {
       supabaseClient.auth.getSession().then(async ({ data, error }) => {
         if (error) console.error("Could not load auth session:", error);
