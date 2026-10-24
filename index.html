@@ -1822,10 +1822,9 @@ if (startVoiceCallButton) {
     renderProviders();
     loadApprovedProviders();
         const profileScreen = document.getElementById("customer-profile");
-    const homeSections = Array.from(
-      document.querySelectorAll("main > section")
-    ).filter(section => section.id !== "customer-profile");
-
+   const homeSections = Array.from(
+  document.querySelectorAll("main > section, body > section")
+).filter(section => section.id !== "customer-profile");
     const mobileNav = document.querySelector(".mobile-nav");
     const siteFooter = document.querySelector("footer");
     const openProfileButton = document.getElementById("openProfileScreen");
