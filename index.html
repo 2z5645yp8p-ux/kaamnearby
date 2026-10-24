@@ -1838,17 +1838,18 @@ if (bookingSection && !homeSections.includes(bookingSection)) {
     const openProfileButton = document.getElementById("openProfileScreen");
     const backToHomeButton = document.getElementById("backToHome");
 
- function showProfileScreen() {
+function showProfileScreen() {
   if (!profileScreen) return;
 
   homeSections.forEach(section => {
     section.hidden = true;
+    section.style.setProperty("display", "none", "important");
   });
 
   const bookingSection = document.getElementById("booking");
   if (bookingSection) {
-    bookingSection.style.setProperty("display", "none", "important");
     bookingSection.hidden = true;
+    bookingSection.style.setProperty("display", "none", "important");
   }
 
   if (mobileNav) mobileNav.hidden = true;
@@ -1859,40 +1860,40 @@ if (bookingSection && !homeSections.includes(bookingSection)) {
 
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
-      if (!profileScreen) return;
 
-      homeSections.forEach(section => section.hidden = true);
-      if (mobileNav) mobileNav.hidden = true;
-      if (siteFooter) siteFooter.hidden = true;
+function showHomeScreen() {
+  if (!profileScreen) return;
 
-      profileScreen.hidden = false;
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+  profileScreen.hidden = true;
+  profileScreen.style.setProperty("display", "none", "important");
 
-    function showHomeScreen() {
-      if (!profileScreen) return;
+  homeSections.forEach(section => {
+    section.hidden = false;
+    section.style.removeProperty("display");
+  });
 
-      profileScreen.hidden = true;
-      const bookingSection = document.getElementById("booking");
-if (bookingSection) {
-  bookingSection.style.removeProperty("display");
-  bookingSection.hidden = false;
+  const bookingSection = document.getElementById("booking");
+  if (bookingSection) {
+    bookingSection.hidden = false;
+    bookingSection.style.removeProperty("display");
+  }
+
+  if (mobileNav) mobileNav.hidden = false;
+  if (siteFooter) siteFooter.hidden = false;
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
-      homeSections.forEach(section => section.hidden = false);
-      if (mobileNav) mobileNav.hidden = false;
-      if (siteFooter) siteFooter.hidden = false;
 
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+if (openProfileButton) {
+  openProfileButton.addEventListener("click", event => {
+    event.preventDefault();
+    showProfileScreen();
+  });
+}
 
-    if (openProfileButton) {
-      openProfileButton.addEventListener("click", event => {
-        event.preventDefault();
-        showProfileScreen();
-      });
-    }
-
-    if (backToHomeButton) {
+if (backToHomeButton) {
+  backToHomeButton.addEventListener("click", showHomeScreen);
+}
       backToHomeButton.addEventListener("click", showHomeScreen);
     }
   </script>
