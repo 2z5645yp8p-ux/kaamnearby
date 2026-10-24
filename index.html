@@ -1830,6 +1830,10 @@ if (startVoiceCallButton) {
   document.querySelectorAll("main > section, body > section")
 ).filter(section => section.id !== "customer-profile");
     const mobileNav = document.querySelector(".mobile-nav");
+    const bookingSection = document.getElementById("booking");
+if (bookingSection && !homeSections.includes(bookingSection)) {
+  homeSections.push(bookingSection);
+}
     const siteFooter = document.querySelector("footer");
     const openProfileButton = document.getElementById("openProfileScreen");
     const backToHomeButton = document.getElementById("backToHome");
