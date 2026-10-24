@@ -1838,7 +1838,27 @@ if (bookingSection && !homeSections.includes(bookingSection)) {
     const openProfileButton = document.getElementById("openProfileScreen");
     const backToHomeButton = document.getElementById("backToHome");
 
-    function showProfileScreen() {
+ function showProfileScreen() {
+  if (!profileScreen) return;
+
+  homeSections.forEach(section => {
+    section.hidden = true;
+  });
+
+  const bookingSection = document.getElementById("booking");
+  if (bookingSection) {
+    bookingSection.style.setProperty("display", "none", "important");
+    bookingSection.hidden = true;
+  }
+
+  if (mobileNav) mobileNav.hidden = true;
+  if (siteFooter) siteFooter.hidden = true;
+
+  profileScreen.hidden = false;
+  profileScreen.style.setProperty("display", "block", "important");
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
       if (!profileScreen) return;
 
       homeSections.forEach(section => section.hidden = true);
@@ -1853,6 +1873,11 @@ if (bookingSection && !homeSections.includes(bookingSection)) {
       if (!profileScreen) return;
 
       profileScreen.hidden = true;
+      const bookingSection = document.getElementById("booking");
+if (bookingSection) {
+  bookingSection.style.removeProperty("display");
+  bookingSection.hidden = false;
+}
       homeSections.forEach(section => section.hidden = false);
       if (mobileNav) mobileNav.hidden = false;
       if (siteFooter) siteFooter.hidden = false;
