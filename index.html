@@ -530,7 +530,78 @@
       </div>
     </section>
 
+    <section id="booking" class="section-anchor">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Book a Service</h2>
+            <p>Send a booking request to Kaamly.</p>
+          </div>
+        </div>
+        <div class="provider-form-wrap">
+          <form id="bookingForm" class="provider-form">
+            <input type="hidden" id="bookingProviderId" name="provider_id" value="">
+            <div id="selectedProviderNotice" class="notice" style="grid-column:1/-1;" hidden></div>
 
+            <div class="field">
+              <label for="bookingName">Your name</label>
+              <input id="bookingName" name="customer_name" required placeholder="Enter your name">
+            </div>
+
+            <div class="field">
+              <label for="bookingPhone">Phone number</label>
+              <input id="bookingPhone" name="customer_phone" type="tel" required placeholder="03XXXXXXXXX">
+            </div>
+
+            <div class="field">
+              <label for="bookingService">Choose service</label>
+              <select id="bookingService" name="service_name" required>
+                <option value="">Choose a service</option>
+                <option>Plumbing</option>
+                <option>Electrical</option>
+                <option>AC Repair</option>
+                <option>Moving</option>
+                <option>Handyman</option>
+                <option>Beauty / Salon</option>
+                <option>Photography</option>
+                <option>Video Shooting</option>
+                <option>Cleaning</option>
+                <option>Carpentry</option>
+                <option>Other</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="bookingArea">Area in Islamabad</label>
+              <input id="bookingArea" name="customer_area" required placeholder="e.g. G-11">
+            </div>
+
+            <div class="field">
+              <label for="bookingDate">Preferred date</label>
+              <input id="bookingDate" name="preferred_date" type="date">
+            </div>
+
+            <div class="field">
+              <label for="bookingTime">Preferred time</label>
+              <select id="bookingTime" name="preferred_time">
+                <option value="">Any time</option>
+                <option>Morning</option>
+                <option>Afternoon</option>
+                <option>Evening</option>
+              </select>
+            </div>
+
+            <div class="field full">
+              <label for="bookingDetails">Additional details</label>
+              <textarea id="bookingDetails" name="details" placeholder="Describe the work you need"></textarea>
+            </div>
+
+            <button class="card-btn" type="submit" style="grid-column:1/-1;">Submit Booking Request</button>
+            <p id="bookingStatus" role="status" style="grid-column:1/-1;margin:0;"></p>
+          </form>
+        </div>
+      </div>
+    </section>
     <section id="add-provider" class="section-anchor compact-provider-section">
       <div class="container">
         <div class="section-head">
@@ -1987,62 +2058,6 @@ if (openProfileButton) {
 }
 
 </script>
-<section id="booking" class="section-anchor">
-  <div class="container">
-    <div class="section-head">
-      <div>
-        <h2>Book a Service</h2>
-        <p>Send a booking request to Kaamly.</p>
-      </div>
-    </div>
-
-    <form id="bookingForm">
-      <input type="hidden" id="bookingProviderId" name="provider_id" value="">
-      <div id="selectedProviderNotice" class="notice" hidden></div>
-      <label for="bookingName">Your name</label>
-      <input id="bookingName" name="customer_name" required placeholder="Enter your name">
-
-      <label for="bookingPhone">Phone number</label>
-      <input id="bookingPhone" name="customer_phone" type="tel" required placeholder="03XXXXXXXXX">
-
-      <label for="bookingService">Choose service</label>
-      <select id="bookingService" name="service_name" required>
-        <option value="">Choose a service</option>
-        <option>Plumbing</option>
-        <option>Electrical</option>
-        <option>AC Repair</option>
-        <option>Moving</option>
-        <option>Handyman</option>
-        <option>Beauty / Salon</option>
-        <option>Photography</option>
-        <option>Video Shooting</option>
-        <option>Cleaning</option>
-        <option>Carpentry</option>
-        <option>Other</option>
-      </select>
-
-      <label for="bookingArea">Area in Islamabad</label>
-      <input id="bookingArea" name="customer_area" required placeholder="e.g. G-11">
-
-      <label for="bookingDate">Preferred date</label>
-      <input id="bookingDate" name="preferred_date" type="date">
-
-      <label for="bookingTime">Preferred time</label>
-      <select id="bookingTime" name="preferred_time">
-        <option value="">Any time</option>
-        <option>Morning</option>
-        <option>Afternoon</option>
-        <option>Evening</option>
-      </select>
-
-      <label for="bookingDetails">Additional details</label>
-      <textarea id="bookingDetails" name="details" placeholder="Describe the work you need"></textarea>
-
-      <button class="card-btn" type="submit">Submit Booking Request</button>
-      <p id="bookingStatus" role="status"></p>
-    </form>
-  </div>
-</section>
 
 <script>
 const bookingForm = document.getElementById("bookingForm");
