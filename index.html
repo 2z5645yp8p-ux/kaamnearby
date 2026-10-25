@@ -1082,7 +1082,30 @@ if (category.includes("handyman")) return "From Rs 1,000";
       return (rules[selected] || new RegExp(selected.toLowerCase())).test(value);
     }
 
-    function renderProviders() {
+  // Kaamly: Islamabad ke do areas ka taqreebi faasla (sector grid se)
+function kaamlyAreaDistance(fromArea, toArea) {
+  const a = String(fromArea || "").trim().toLowerCase();
+  const b = String(toArea || "").trim().toLowerCase();
+  if (a && a === b) return 0;
+
+  const aBahria = /bahria/.test(a);
+  const bBahria = /bahria/.test(b);
+  if (aBahria || bBahria) return (aBahria && bBahria) ? 0 : 100;
+
+  const pattern = /^([a-z])\s*-?\s*(\d{1,2})(?!\d)/;
+  const pa = a.match(pattern);
+  const pb = b.match(pattern);
+  if (!pa || !pb) return 99;
+
+  const letters = "abcdefghi";
+  const ya = letters.indexOf(pa[1]);
+  const yb = letters.indexOf(pb[1]);
+  if (ya < 0 || yb < 0) return 99;
+
+  return Math.hypot(Number(pa[2]) - Number(pb[2]), ya - yb);
+}
+
+function renderProviders() {
       const query = searchInput.value.trim().toLowerCase();
       const area = areaFilter.value;
       const selectedService = serviceFilter ? serviceFilter.value : "";
@@ -1107,7 +1130,11 @@ if (category.includes("handyman")) return "From Rs 1,000";
 if (filtered.length === 0) {
   recoveredCategoryFilter = false;
 }
-   const preferredArea = preferredAreaSort ? preferredAreaSort.value : "";   
+  const preferredArea = preferredAreaSort ? preferredAreaSort.value : "";
+      if (preferredArea) {
+        filtered = filtered.slice().sort((a, b) =>
+          kaamlyAreaDistance(preferredArea, a.area) - kaamlyAreaDistance(preferredArea, b.area));
+      }   
       resultsCount.textContent = `Showing ${filtered.length} ${filtered.length === 1 ? "provider" : "providers"}${preferredArea ? ` · ${preferredArea} providers prioritized` : ""}`;
       if (!filtered.length) {
         cards.innerHTML = '<div class="empty"><h3>No matching listings</h3><p>No approved providers match the current search, service and area filters. Clear the search or choose All services and All Islamabad areas.</p></div>';
