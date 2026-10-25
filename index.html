@@ -680,90 +680,132 @@
     </section>
         </section>
 
-<section id="customer-profile" class="section-anchor" hidden style="padding:60px 20px;background:linear-gradient(135deg,#071f19,#12372d);color:#fff;">
-  <div class="container" style="max-width:900px;margin:auto;">
-<button type="button" id="backToHome"
-  style="display:flex;align-items:center;gap:10px;margin-bottom:24px;padding:11px 18px;border:1px solid #d4af57;border-radius:12px;background:#0b251e;color:#d4af57;font-size:15px;font-weight:700;cursor:pointer;">
-  ← Back to Home
-</button>
-    <div style="text-align:center;margin-bottom:30px;">
-      <p style="color:#d4af57;letter-spacing:4px;font-size:12px;font-weight:700;">KAAMLY ACCOUNT</p>
-      <h2 style="font-size:clamp(28px,4vw,40px);margin:10px 0;color:#fff;">My Profile</h2>
-      <p style="color:#c5d2cc;">Your account, your services, all in one place.</p>
-    </div>
 
-    <div style="max-width:650px;margin:auto;border:1px solid #c9a44c;border-radius:24px;overflow:hidden;background:linear-gradient(145deg,#163d30,#0b251e);box-shadow:0 20px 50px rgba(0,0,0,.3);">
+<section id="customer-profile" class="section-anchor" hidden
+  style="min-height:100vh;padding:22px 16px 40px;background:linear-gradient(145deg,#031b15,#073b2b 58%,#021710);color:#fff;">
 
-      <div style="padding:32px 24px;text-align:center;background:rgba(212,175,87,.06);border-bottom:1px solid rgba(212,175,87,.3);">
-        <div style="width:86px;height:86px;margin:auto;border-radius:50%;border:2px solid #d4af57;background:#0b251e;color:#d4af57;display:flex;align-items:center;justify-content:center;font-size:38px;box-shadow:0 0 25px rgba(212,175,87,.15);">♙</div>
-        <h3 style="font-size:23px;margin:16px 0 6px;color:#fff;">Welcome to Kaamly</h3>
-        <p style="margin:0;color:#c5d2cc;font-size:14px;">Har Kaam, Ab Asaan</p>
-      </div>
+  <div style="max-width:520px;margin:auto;">
 
-      <div style="padding:26px;">
-        <div style="padding:18px;margin-bottom:14px;border:1px solid rgba(212,175,87,.25);border-radius:14px;background:rgba(0,0,0,.12);">
-          <p style="margin:0 0 8px;color:#d4af57;font-size:12px;font-weight:700;letter-spacing:1px;">EMAIL / PHONE</p>
-          <p id="profileEmail" style="margin:0;color:#fff;overflow-wrap:anywhere;font-size:16px;">Loading...</p>
-        </div>
+    <!-- Top bar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
+      <button type="button" id="backToHome" aria-label="Back to Home"
+        style="width:42px;height:42px;border:1px solid rgba(212,175,87,.5);border-radius:50%;background:#0b3024;color:#f1d58b;font-size:25px;cursor:pointer;">
+        &#8592;
+      </button>
 
-        <div style="padding:18px;margin-bottom:24px;border:1px solid rgba(212,175,87,.25);border-radius:14px;background:rgba(0,0,0,.12);">
-          <p style="margin:0 0 8px;color:#d4af57;font-size:12px;font-weight:700;letter-spacing:1px;">ACCOUNT TYPE</p>
-          <p id="profileRole" style="margin:0;color:#fff;font-size:16px;">Loading...</p>
-        </div>
+      <h2 style="margin:0;font-size:22px;font-weight:700;letter-spacing:.2px;">My Profile</h2>
 
-        
-<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:20px 0;">
-
-  <button type="button" id="editProfileOption" style="padding:18px 12px;border:1px solid #d4af57;border-radius:14px;background:#0b251e;color:#fff;text-align:left;">
-    <span style="display:block;font-size:25px;margin-bottom:8px;">👤</span>
-    <strong>Edit Profile</strong>
-    <small style="display:block;color:#c5d2cc;margin-top:5px;">Personal details</small>
-  </button>
-
-  <button type="button" id="myBookingsOption" style="padding:18px 12px;border:1px solid #d4af57;border-radius:14px;background:#0b251e;color:#fff;text-align:left;">
-    <span style="display:block;font-size:25px;margin-bottom:8px;">📅</span>
-    <strong>My Bookings</strong>
-    <small style="display:block;color:#c5d2cc;margin-top:5px;">View service requests</small>
-  </button>
-
-  <button type="button" id="myReviewsOption" style="padding:18px 12px;border:1px solid #d4af57;border-radius:14px;background:#0b251e;color:#fff;text-align:left;">
-    <span style="display:block;font-size:25px;margin-bottom:8px;">⭐</span>
-    <strong>My Reviews</strong>
-    <small style="display:block;color:#c5d2cc;margin-top:5px;">Ratings and feedback</small>
-  </button>
-
-  <button type="button" id="myFavoritesOption" style="padding:18px 12px;border:1px solid #d4af57;border-radius:14px;background:#0b251e;color:#fff;text-align:left;">
-    <span style="display:block;font-size:25px;margin-bottom:8px;">♥</span>
-    <strong>Favourites</strong>
-    <small style="display:block;color:#c5d2cc;margin-top:5px;">Saved providers</small>
-  </button>
-
-  <button type="button" id="walletOption" style="padding:18px 12px;border:1px solid #d4af57;border-radius:14px;background:#0b251e;color:#fff;text-align:left;">
-    <span style="display:block;font-size:25px;margin-bottom:8px;">💳</span>
-    <strong>Wallet & Payments</strong>
-    <small style="display:block;color:#c5d2cc;margin-top:5px;">Payment history</small>
-  </button>
-
-  <button type="button" id="settingsOption" style="padding:18px 12px;border:1px solid #d4af57;border-radius:14px;background:#0b251e;color:#fff;text-align:left;">
-    <span style="display:block;font-size:25px;margin-bottom:8px;">⚙️</span>
-    <strong>Settings & Support</strong>
-    <small style="display:block;color:#c5d2cc;margin-top:5px;">Help with your account</small>
-  </button>
-
-</div>
-
-        <button type="button" id="profileSignOut"
-          style="width:100%;padding:15px;border:1px solid #d4af57;border-radius:12px;background:#d4af57;color:#102a21;font-size:15px;font-weight:700;cursor:pointer;">
-          Sign Out
-        </button>
-
-        <p id="profileMessage" style="margin:12px 0 0;text-align:center;color:#f2d891;"></p>
+      <div aria-hidden="true" style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(212,175,87,.5);border-radius:50%;color:#e5c56f;">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+          <rect x="3" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/>
+          <rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
       </div>
     </div>
 
-    <p style="text-align:center;margin-top:22px;color:#b9c9c1;font-size:13px;">Your Kaamly account, securely connected.</p>
+    <!-- Profile header -->
+    <div style="padding:20px 18px 18px;border:1px solid rgba(212,175,87,.45);border-radius:20px;background:linear-gradient(130deg,rgba(17,72,51,.96),rgba(5,35,25,.98));box-shadow:0 14px 35px rgba(0,0,0,.22);">
+
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="position:relative;flex-shrink:0;">
+          <div style="width:68px;height:68px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #d9b85f;background:#194c37;color:#f3d887;">
+            <svg width="39" height="39" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+              <circle cx="12" cy="8" r="4"/>
+              <path d="M4 21v-2a8 8 0 0 1 16 0v2z"/>
+            </svg>
+          </div>
+          <span aria-hidden="true" style="position:absolute;right:-2px;bottom:0;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#e0bd60;color:#173b29;font-size:12px;border:2px solid #0b3024;">&#9998;</span>
+        </div>
+
+        <div style="min-width:0;flex:1;">
+          <h3 id="profileDisplayName" style="margin:0 0 6px;font-size:19px;color:#fff;">Welcome to Kaamly</h3>
+          <p id="profileEmail" style="margin:0 0 5px;font-size:12px;color:#d2dfd6;overflow-wrap:anywhere;">Loading...</p>
+          <p id="profileRole" style="margin:0;font-size:12px;color:#e7c66e;">Loading...</p>
+        </div>
+      </div>
+
+      <p style="margin:16px 0 0;font-size:12px;color:#c8d9cf;">Har Kaam, Ab Asaan</p>
+    </div>
+
+    <!-- Account stats -->
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:14px 0 20px;">
+
+      <div style="padding:15px 5px;text-align:center;border:1px solid rgba(212,175,87,.35);border-radius:15px;background:rgba(14,61,43,.78);">
+        <strong id="profileBookingsCount" style="display:block;font-size:23px;color:#f0d17b;">0</strong>
+        <span style="font-size:11px;color:#d5e0d8;">Bookings</span>
+      </div>
+
+      <div style="padding:15px 5px;text-align:center;border:1px solid rgba(212,175,87,.35);border-radius:15px;background:rgba(14,61,43,.78);">
+        <strong id="profileReviewsCount" style="display:block;font-size:23px;color:#f0d17b;">0</strong>
+        <span style="font-size:11px;color:#d5e0d8;">Reviews</span>
+      </div>
+
+      <div style="padding:15px 5px;text-align:center;border:1px solid rgba(212,175,87,.35);border-radius:15px;background:rgba(14,61,43,.78);">
+        <strong id="profileRating" style="display:block;font-size:23px;color:#f0d17b;">—</strong>
+        <span style="font-size:11px;color:#d5e0d8;">Rating</span>
+      </div>
+    </div>
+
+    <!-- Profile menu -->
+    <div style="overflow:hidden;border:1px solid rgba(212,175,87,.35);border-radius:18px;background:rgba(5,34,24,.88);">
+
+      <button type="button" id="myBookingsOption" style="width:100%;min-height:57px;padding:13px 15px;display:flex;align-items:center;gap:13px;text-align:left;border:0;border-bottom:1px solid rgba(212,175,87,.15);background:transparent;color:#fff;cursor:pointer;">
+        <span style="color:#e4c367;display:flex;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h3"/></svg>
+        </span>
+        <span style="flex:1;font-size:14px;font-weight:600;">My Bookings</span><span style="font-size:22px;color:#c4d3c9;">&#8250;</span>
+      </button>
+
+      <button type="button" id="myReviewsOption" style="width:100%;min-height:57px;padding:13px 15px;display:flex;align-items:center;gap:13px;text-align:left;border:0;border-bottom:1px solid rgba(212,175,87,.15);background:transparent;color:#fff;cursor:pointer;">
+        <span style="color:#e4c367;display:flex;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9z"/></svg>
+        </span>
+        <span style="flex:1;font-size:14px;font-weight:600;">My Reviews</span><span style="font-size:22px;color:#c4d3c9;">&#8250;</span>
+      </button>
+
+      <button type="button" id="myFavoritesOption" style="width:100%;min-height:57px;padding:13px 15px;display:flex;align-items:center;gap:13px;text-align:left;border:0;border-bottom:1px solid rgba(212,175,87,.15);background:transparent;color:#fff;cursor:pointer;">
+        <span style="color:#e4c367;display:flex;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8z"/></svg>
+        </span>
+        <span style="flex:1;font-size:14px;font-weight:600;">Favorites</span><span style="font-size:22px;color:#c4d3c9;">&#8250;</span>
+      </button>
+
+      <button type="button" id="walletOption" style="width:100%;min-height:57px;padding:13px 15px;display:flex;align-items:center;gap:13px;text-align:left;border:0;border-bottom:1px solid rgba(212,175,87,.15);background:transparent;color:#fff;cursor:pointer;">
+        <span style="color:#e4c367;display:flex;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2" y="5" width="20" height="15" rx="2"/><path d="M2 9h20M16 15h2"/><path d="M5 5V3h14v2"/></svg>
+        </span>
+        <span style="flex:1;font-size:14px;font-weight:600;">Wallet &amp; Payments</span><span style="font-size:22px;color:#c4d3c9;">&#8250;</span>
+      </button>
+
+      <button type="button" id="settingsOption" style="width:100%;min-height:57px;padding:13px 15px;display:flex;align-items:center;gap:13px;text-align:left;border:0;border-bottom:1px solid rgba(212,175,87,.15);background:transparent;color:#fff;cursor:pointer;">
+        <span style="color:#e4c367;display:flex;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.6a8 8 0 0 1-1.7 1l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.7-1l-1.7.6-1.4-2.4 1.4-1.1a7 7 0 0 1 0-2l-1.4-1.1 1.4-2.4 1.7.6a8 8 0 0 1 1.7-1l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.7 1l1.7-.6 1.4 2.4-1.4 1.1a7 7 0 0 1 0 2z" transform="translate(-1 -1) scale(1.08)"/></svg>
+        </span>
+        <span style="flex:1;font-size:14px;font-weight:600;">Settings</span><span style="font-size:22px;color:#c4d3c9;">&#8250;</span>
+      </button>
+
+      <button type="button" id="helpSupportOption" style="width:100%;min-height:57px;padding:13px 15px;display:flex;align-items:center;gap:13px;text-align:left;border:0;background:transparent;color:#fff;cursor:pointer;">
+        <span style="color:#e4c367;display:flex;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2-3 4M12 17.5v.1"/></svg>
+        </span>
+        <span style="flex:1;font-size:14px;font-weight:600;">Help &amp; Support</span><span style="font-size:22px;color:#c4d3c9;">&#8250;</span>
+      </button>
+    </div>
+
+    <!-- Sign out -->
+    <button type="button" id="profileSignOut" style="width:100%;margin-top:19px;padding:15px;display:flex;align-items:center;justify-content:center;gap:10px;border:1px solid rgba(212,175,87,.6);border-radius:14px;background:rgba(5,34,24,.8);color:#e9ca76;font-size:14px;font-weight:700;cursor:pointer;">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 17l5-5-5-5M15 12H3"/><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7"/></svg>
+      Log Out
+    </button>
+
+    <p id="profileMessage" style="margin:12px 0 0;text-align:center;color:#f2d891;font-size:13px;"></p>
+    <p style="text-align:center;margin-top:22px;color:#a9c4b5;font-size:11px;letter-spacing:1px;">KAAMLY · HAR KAAM, AB ASAAN</p>
+
   </div>
 </section>
+
   </main>
   </main>
 
