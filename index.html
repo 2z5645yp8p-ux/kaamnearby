@@ -793,6 +793,14 @@
         <span style="flex:1;font-size:14px;font-weight:600;">Help &amp; Support</span><span style="font-size:22px;color:#c4d3c9;">&#8250;</span>
       </button>
     </div>
+        <!-- My Bookings panel -->
+    <div id="profileBookingsPanel" hidden style="margin-top:16px;padding:14px;border:1px solid rgba(212,175,87,.35);border-radius:18px;background:rgba(5,34,24,.88);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <strong style="color:#f0d17b;font-size:15px;">My Bookings</strong>
+        <button type="button" id="profileBookingsClose" style="border:1px solid rgba(212,175,87,.5);background:transparent;color:#e9ca76;border-radius:10px;padding:5px 12px;font-size:12px;cursor:pointer;">Close</button>
+      </div>
+      <div id="profileBookingsList" style="color:#d5e0d8;font-size:13px;"></div>
+    </div>
 
     <!-- Sign out -->
     <button type="button" id="profileSignOut" style="width:100%;margin-top:19px;padding:15px;display:flex;align-items:center;justify-content:center;gap:10px;border:1px solid rgba(212,175,87,.6);border-radius:14px;background:rgba(5,34,24,.8);color:#e9ca76;font-size:14px;font-weight:700;cursor:pointer;">
@@ -1974,6 +1982,7 @@ if (openProfileButton) {
   openProfileButton.addEventListener("click", event => {
     event.preventDefault();
     showProfileScreen();
+    if (typeof loadProfileStats === "function") loadProfileStats();
   });
 }
 
@@ -2206,15 +2215,79 @@ if (editProfileOption) {
   });
 }
 
-if (myBookingsOption) {
-  myBookingsOption.addEventListener("click", () => {
-    showHomeScreen();
-    const booking = document.getElementById("booking");
-    if (booking) {
-      booking.scrollIntoView({ behavior: "smooth", block: "start" });
-    } else {
-      alert("Booking section nahi mila.");
+// ===== Kaamly: Profile stats + My Bookings =====
+function kaamlyEsc(value) {
+  return String(value ?? "").replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[c];
+  });
+}
+
+async function loadProfileStats() {
+  const countEl = document.getElementById("profileBookingsCount");
+  if (!countEl || !supabaseClient) return;
+  try {
+    const { data: s } = await supabaseClient.auth.getSession();
+    if (!s || !s.session) return;
+    const { count, error } = await supabaseClient
+      .from("bookings")
+      .select("id", { count: "exact", head: true })
+      .eq("customer_id", s.session.user.id);
+    if (error) throw error;
+    countEl.textContent = String(count ?? 0);
+  } catch (e) {
+    console.error("Profile stats error:", e);
+  }
+}
+
+async function loadMyBookings() {
+  const panel = document.getElementById("profileBookingsPanel");
+  const list = document.getElementById("profileBookingsList");
+  if (!panel || !list) return;
+  panel.hidden = false;
+  list.textContent = "Loading...";
+  panel.scrollIntoView({ behavior: "smooth", block: "start" });
+  try {
+    if (!supabaseClient) throw new Error("Supabase connection nahi hai.");
+    const { data: s, error: sessionError } = await supabaseClient.auth.getSession();
+    if (sessionError || !s.session) throw new Error("Pehle sign in karein.");
+    const { data, error } = await supabaseClient
+      .from("bookings")
+      .select("id, service_name, customer_area, preferred_date, preferred_time, details, status, final_price, created_at")
+      .eq("customer_id", s.session.user.id)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      list.innerHTML = '<p style="margin:0;">Abhi aapki koi booking nahi hai.</p>';
+      return;
     }
+    list.innerHTML = data.map(function (b) {
+      const status = b.status ? b.status.charAt(0).toUpperCase() + b.status.slice(1) : "Submitted";
+      const when = [b.preferred_date, b.preferred_time].filter(Boolean).join(" · ");
+      const price = b.final_price !== null && b.final_price !== undefined ? "Rs " + Number(b.final_price) : "";
+      return '<div style="padding:12px;margin-bottom:10px;border:1px solid rgba(212,175,87,.25);border-radius:14px;background:rgba(14,61,43,.6);">' +
+        '<div style="display:flex;justify-content:space-between;gap:8px;">' +
+        '<strong style="color:#fff;">' + kaamlyEsc(b.service_name) + '</strong>' +
+        '<span style="color:#e7c66e;font-size:12px;">' + kaamlyEsc(status) + '</span></div>' +
+        '<div style="margin-top:6px;font-size:12px;">Area: ' + kaamlyEsc(b.customer_area) + '</div>' +
+        (when ? '<div style="font-size:12px;">When: ' + kaamlyEsc(when) + '</div>' : '') +
+        (b.details ? '<div style="font-size:12px;">Details: ' + kaamlyEsc(b.details) + '</div>' : '') +
+        (price ? '<div style="font-size:12px;color:#f0d17b;">Price: ' + kaamlyEsc(price) + '</div>' : '') +
+        '</div>';
+    }).join("");
+  } catch (e) {
+    console.error("My Bookings error:", e);
+    list.textContent = e.message || "Bookings load nahi ho sakin.";
+  }
+}
+
+if (myBookingsOption) {
+  myBookingsOption.addEventListener("click", loadMyBookings);
+}
+
+const profileBookingsClose = document.getElementById("profileBookingsClose");
+if (profileBookingsClose) {
+  profileBookingsClose.addEventListener("click", function () {
+    document.getElementById("profileBookingsPanel").hidden = true;
   });
 }
 
