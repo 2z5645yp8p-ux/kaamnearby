@@ -530,13 +530,14 @@
       </div>
     </section>
 
-    <section id="booking" class="section-anchor">
+   <section id="booking" class="section-anchor" hidden>
       <div class="container">
         <div class="section-head">
           <div>
             <h2>Book a Service</h2>
-            <p>Send a booking request to Kaamly.</p>
+                       <p>Send a booking request to Kaamly.</p>
           </div>
+          <button type="button" id="bookingCloseButton" class="secondary-btn" onclick="document.getElementById('booking').hidden=true;document.getElementById('bookingProviderId').value='';document.getElementById('selectedProviderNotice').hidden=true;var b=document.getElementById('browse');if(b)b.scrollIntoView({behavior:'smooth',block:'start'});">Close</button>
         </div>
         <div class="provider-form-wrap">
           <form id="bookingForm" class="provider-form">
@@ -1813,7 +1814,10 @@ if (callLink) {
         if (option) serviceSelect.value = option.value;
       }
       modal.classList.remove("open");
-      document.getElementById("booking").scrollIntoView({behavior:"smooth", block:"start"});
+         const bookingSectionToShow = document.getElementById("booking");
+      bookingSectionToShow.hidden = false;
+      document.getElementById("bookingStatus").textContent = "";
+      bookingSectionToShow.scrollIntoView({behavior:"smooth", block:"start"});
       document.getElementById("bookingName").focus({preventScroll:true});
     });
 
@@ -2039,7 +2043,7 @@ function showHomeScreen() {
 
   const bookingSection = document.getElementById("booking");
   if (bookingSection) {
-    bookingSection.hidden = false;
+   bookingSection.hidden = !document.getElementById("bookingProviderId").value;
     bookingSection.style.removeProperty("display");
   }
 
