@@ -711,6 +711,47 @@
           <p id="profileRole" style="margin:0;color:#fff;font-size:16px;">Loading...</p>
         </div>
 
+        
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:20px 0;">
+
+  <button type="button" id="editProfileOption" style="padding:18px 12px;border:1px solid #d4af57;border-radius:14px;background:#0b251e;color:#fff;text-align:left;">
+    <span style="display:block;font-size:25px;margin-bottom:8px;">👤</span>
+    <strong>Edit Profile</strong>
+    <small style="display:block;color:#c5d2cc;margin-top:5px;">Personal details</small>
+  </button>
+
+  <button type="button" id="myBookingsOption" style="padding:18px 12px;border:1px solid #d4af57;border-radius:14px;background:#0b251e;color:#fff;text-align:left;">
+    <span style="display:block;font-size:25px;margin-bottom:8px;">📅</span>
+    <strong>My Bookings</strong>
+    <small style="display:block;color:#c5d2cc;margin-top:5px;">View service requests</small>
+  </button>
+
+  <button type="button" id="myReviewsOption" style="padding:18px 12px;border:1px solid #d4af57;border-radius:14px;background:#0b251e;color:#fff;text-align:left;">
+    <span style="display:block;font-size:25px;margin-bottom:8px;">⭐</span>
+    <strong>My Reviews</strong>
+    <small style="display:block;color:#c5d2cc;margin-top:5px;">Ratings and feedback</small>
+  </button>
+
+  <button type="button" id="myFavoritesOption" style="padding:18px 12px;border:1px solid #d4af57;border-radius:14px;background:#0b251e;color:#fff;text-align:left;">
+    <span style="display:block;font-size:25px;margin-bottom:8px;">♥</span>
+    <strong>Favourites</strong>
+    <small style="display:block;color:#c5d2cc;margin-top:5px;">Saved providers</small>
+  </button>
+
+  <button type="button" id="walletOption" style="padding:18px 12px;border:1px solid #d4af57;border-radius:14px;background:#0b251e;color:#fff;text-align:left;">
+    <span style="display:block;font-size:25px;margin-bottom:8px;">💳</span>
+    <strong>Wallet & Payments</strong>
+    <small style="display:block;color:#c5d2cc;margin-top:5px;">Payment history</small>
+  </button>
+
+  <button type="button" id="settingsOption" style="padding:18px 12px;border:1px solid #d4af57;border-radius:14px;background:#0b251e;color:#fff;text-align:left;">
+    <span style="display:block;font-size:25px;margin-bottom:8px;">⚙️</span>
+    <strong>Settings & Support</strong>
+    <small style="display:block;color:#c5d2cc;margin-top:5px;">Help with your account</small>
+  </button>
+
+</div>
+
         <button type="button" id="profileSignOut"
           style="width:100%;padding:15px;border:1px solid #d4af57;border-radius:12px;background:#d4af57;color:#102a21;font-size:15px;font-weight:700;cursor:pointer;">
           Sign Out
@@ -1894,10 +1935,7 @@ if (openProfileButton) {
   });
 }
 
-if (backToHomeButton) {
-  backToHomeButton.addEventListener("click", showHomeScreen);
-}
-</script>
+
 <section id="booking" class="section-anchor">
   <div class="container">
     <div class="section-head">
@@ -2106,6 +2144,59 @@ if (supabaseClient) {
     if (event === "PASSWORD_RECOVERY") {
       setTimeout(showKaamlyPasswordResetForm, 0);
     }
+  });
+}
+    if (backToHomeButton) {
+  backToHomeButton.addEventListener("click", showHomeScreen);
+}
+
+// Kaamly Profile option buttons
+const editProfileOption = document.getElementById("editProfileOption");
+const myBookingsOption = document.getElementById("myBookingsOption");
+const myReviewsOption = document.getElementById("myReviewsOption");
+const myFavoritesOption = document.getElementById("myFavoritesOption");
+const walletOption = document.getElementById("walletOption");
+const settingsOption = document.getElementById("settingsOption");
+
+if (editProfileOption) {
+  editProfileOption.addEventListener("click", () => {
+    alert("Edit Profile feature abhi connect karna baqi hai.");
+  });
+}
+
+if (myBookingsOption) {
+  myBookingsOption.addEventListener("click", () => {
+    showHomeScreen();
+    const booking = document.getElementById("booking");
+    if (booking) {
+      booking.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      alert("Booking section nahi mila.");
+    }
+  });
+}
+
+if (myReviewsOption) {
+  myReviewsOption.addEventListener("click", () => {
+    alert("My Reviews feature abhi connect karna baqi hai.");
+  });
+}
+
+if (myFavoritesOption) {
+  myFavoritesOption.addEventListener("click", () => {
+    alert("Favourites feature abhi connect karna baqi hai.");
+  });
+}
+
+if (walletOption) {
+  walletOption.addEventListener("click", () => {
+    alert("Wallet & Payments feature baad mein connect hoga.");
+  });
+}
+
+if (settingsOption) {
+  settingsOption.addEventListener("click", () => {
+    alert("Settings & Support feature abhi connect karna baqi hai.");
   });
 }
 
