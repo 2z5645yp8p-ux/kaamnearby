@@ -437,7 +437,22 @@ header .brand-mark {
 #accountAction[hidden] ~ .kdash-avatar { display: none; }
 @media (max-width: 640px) { header #accountAction { display: none !important; } }
 </style>
-  
+  <style>
+/* Kaamly bottom menu: 4 equal tabs + SVG icons */
+.mobile-nav { grid-template-columns: repeat(4, 1fr) !important; }
+.mobile-nav a span:first-child {
+  display: block; width: 24px; height: 24px; font-size: 0 !important;
+  background-color: currentColor;
+  -webkit-mask-image: var(--ic); mask-image: var(--ic);
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-position: center; mask-position: center;
+  -webkit-mask-size: contain; mask-size: contain;
+}
+.mobile-nav a:nth-child(1) span:first-child { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='6.5'/%3E%3Cpath d='M20 20l-4.2-4.2'/%3E%3C/svg%3E"); }
+.mobile-nav a:nth-child(2) span:first-child { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='9' cy='8' r='3'/%3E%3Cpath d='M3.5 19c.7-3.4 3-5 5.5-5s4.8 1.6 5.5 5'/%3E%3Ccircle cx='17' cy='9' r='2.3'/%3E%3Cpath d='M16.5 14.2c2.3 0 3.6 1.4 4.2 4'/%3E%3C/svg%3E"); }
+.mobile-nav a:nth-child(3) span:first-child { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='8.5'/%3E%3Cpath d='M12 8v8M8 12h8'/%3E%3C/svg%3E"); }
+.mobile-nav a:nth-child(4) span:first-child { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6'/%3E%3C/svg%3E"); }
+</style>
 </head>
 <body class="auth-locked">
   <div id="splashScreen" role="img" aria-label="Kaamly — Har Kaam, Ab Asaan loading screen">
