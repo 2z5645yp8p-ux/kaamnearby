@@ -460,6 +460,18 @@ header .brand-mark {
   width: 44px !important; height: 44px !important;
 }
 </style>
+  <style>
+/* Kaamly profile: white bottom sheet (Screen #11) */
+.kp-sheet { margin: 8px -16px -40px; padding: 14px 18px 40px; min-height: 60vh; background: #fff; color: #17352a; border-radius: 26px 26px 0 0; }
+.kp-sheet > div:first-of-type { background: transparent !important; border: 0 !important; }
+.kp-sheet button[id$="Option"] { color: #1d3328 !important; border-bottom: 1px solid #e8eee8 !important; }
+.kp-sheet button[id$="Option"]:last-child { border-bottom: 0 !important; }
+.kp-sheet button[id$="Option"] > span:first-child { color: #0e4a38 !important; }
+.kp-sheet button[id$="Option"] > span:last-child { color: #8a9a90 !important; }
+#profileSignOut { background: transparent !important; border: 0 !important; color: #1d3328 !important; }
+#profileMessage { color: #8a6a14 !important; }
+.kp-sheet > p:last-child { color: #94a69b !important; }
+</style>
 </head>
 <body class="auth-locked">
   <div id="splashScreen" role="img" aria-label="Kaamly — Har Kaam, Ab Asaan loading screen">
@@ -886,6 +898,7 @@ header .brand-mark {
       </div>
     </div>
 
+       <div class="kp-sheet">
     <!-- Profile menu -->
     <div style="overflow:hidden;border:1px solid rgba(212,175,87,.35);border-radius:18px;background:rgba(5,34,24,.88);">
 
@@ -948,6 +961,7 @@ header .brand-mark {
 
     <p id="profileMessage" style="margin:12px 0 0;text-align:center;color:#f2d891;font-size:13px;"></p>
     <p style="text-align:center;margin-top:22px;color:#a9c4b5;font-size:11px;letter-spacing:1px;">KAAMLY · HAR KAAM, AB ASAAN</p>
+    </div>
 
   </div>
 </section>
