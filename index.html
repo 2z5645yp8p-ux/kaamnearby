@@ -2173,7 +2173,8 @@ if (openProfileButton) {
   openProfileButton.addEventListener("click", event => {
     event.preventDefault();
     showProfileScreen();
-    if (typeof loadProfileStats === "function") loadProfileStats();
+      if (typeof loadProfileStats === "function") loadProfileStats();
+    if (typeof loadProfileReviewStats === "function") loadProfileReviewStats();
   });
 }
 
@@ -2428,7 +2429,7 @@ if (profileBookingsClose) {
 
 if (myReviewsOption) {
   myReviewsOption.addEventListener("click", () => {
-    alert("My Reviews feature abhi connect karna baqi hai.");
+      if (typeof loadMyReviews === "function") { loadMyReviews(); }
   });
 }
 
@@ -2451,6 +2452,111 @@ if (settingsOption) {
 }
 
 </script>
+<script>
+// ===== Kaamly: My Reviews + review stats =====
+function kaamlyEscR(v) {
+  return String(v ?? "").replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[c];
+  });
+}
 
+async function kaamlyFetchMyReviews() {
+  if (!supabaseClient) throw new Error("Supabase connection nahi hai.");
+  const { data: s, error: sessionError } = await supabaseClient.auth.getSession();
+  if (sessionError || !s.session) throw new Error("Pehle sign in karein.");
+  const { data, error } = await supabaseClient
+    .from("provider_reviews")
+    .select("id, provider_id, rating, review_text, created_at")
+    .eq("customer_id", s.session.user.id)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
+async function loadProfileReviewStats() {
+  const countEl = document.getElementById("profileReviewsCount");
+  const ratingEl = document.getElementById("profileRating");
+  if (!countEl || !ratingEl) return;
+  try {
+    const rows = await kaamlyFetchMyReviews();
+    countEl.textContent = String(rows.length);
+    const rated = rows.filter(function (r) { return typeof r.rating === "number"; });
+    ratingEl.textContent = rated.length
+      ? (rated.reduce(function (sum, r) { return sum + r.rating; }, 0) / rated.length).toFixed(1)
+      : "—";
+  } catch (e) {
+    console.error("Review stats error:", e);
+  }
+}
+
+function kaamlyEnsureReviewsPanel() {
+  let panel = document.getElementById("profileReviewsPanel");
+  if (panel) return panel;
+  const anchor = document.getElementById("profileSignOut");
+  if (!anchor) return null;
+  panel = document.createElement("div");
+  panel.id = "profileReviewsPanel";
+  panel.hidden = true;
+  panel.style.cssText = "margin-top:16px;padding:14px;border:1px solid rgba(212,175,87,.35);border-radius:18px;background:rgba(5,34,24,.88);";
+  panel.innerHTML =
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">' +
+    '<strong style="color:#f0d17b;font-size:15px;">My Reviews</strong>' +
+    '<button type="button" id="profileReviewsClose" style="border:1px solid rgba(212,175,87,.5);background:transparent;color:#e9ca76;border-radius:10px;padding:5px 12px;font-size:12px;cursor:pointer;">Close</button>' +
+    '</div><div id="profileReviewsList" style="color:#d5e0d8;font-size:13px;"></div>';
+  anchor.insertAdjacentElement("beforebegin", panel);
+  panel.querySelector("#profileReviewsClose").addEventListener("click", function () { panel.hidden = true; });
+  return panel;
+}
+
+async function loadMyReviews() {
+  const panel = kaamlyEnsureReviewsPanel();
+  if (!panel) return;
+  const bookingsPanel = document.getElementById("profileBookingsPanel");
+  if (bookingsPanel) bookingsPanel.hidden = true;
+  const list = panel.querySelector("#profileReviewsList");
+  panel.hidden = false;
+  list.textContent = "Loading...";
+  panel.scrollIntoView({ behavior: "smooth", block: "start" });
+  try {
+    const rows = await kaamlyFetchMyReviews();
+    if (!rows.length) {
+      list.innerHTML = '<p style="margin:0;">Abhi aap ki koi review nahi hai.</p>';
+      return;
+    }
+    const ids = Array.from(new Set(rows.map(function (r) { return r.provider_id; }).filter(Boolean)));
+    const names = {};
+    if (ids.length) {
+      const { data: provs } = await supabaseClient.from("providers").select("id, name").in("id", ids);
+      (provs || []).forEach(function (p) { names[p.id] = p.name; });
+    }
+    list.innerHTML = rows.map(function (r) {
+      const n = Math.max(0, Math.min(5, Number(r.rating) || 0));
+      const stars = "★".repeat(n) + "☆".repeat(5 - n);
+      const date = r.created_at ? new Date(r.created_at).toLocaleDateString() : "";
+      return '<div style="padding:12px;margin-bottom:10px;border:1px solid rgba(212,175,87,.25);border-radius:14px;background:rgba(14,61,43,.6);">' +
+        '<div style="display:flex;justify-content:space-between;gap:8px;">' +
+        '<strong style="color:#fff;">' + kaamlyEscR(names[r.provider_id] || "Provider") + '</strong>' +
+        '<span style="color:#e7c66e;font-size:13px;letter-spacing:1px;">' + stars + '</span></div>' +
+        (r.review_text ? '<div style="margin-top:6px;font-size:12px;">' + kaamlyEscR(r.review_text) + '</div>' : '') +
+        (date ? '<div style="margin-top:6px;font-size:11px;color:#a9c4b5;">' + kaamlyEscR(date) + '</div>' : '') +
+        '</div>';
+    }).join("");
+  } catch (e) {
+    console.error("My Reviews error:", e);
+    list.textContent = e.message || "Reviews load nahi ho sakin.";
+  }
+}
+
+// My Bookings dabane par reviews panel band ho jaye
+(function () {
+  const bookingsOption = document.getElementById("myBookingsOption");
+  if (bookingsOption) {
+    bookingsOption.addEventListener("click", function () {
+      const p = document.getElementById("profileReviewsPanel");
+      if (p) p.hidden = true;
+    });
+  }
+})();
+</script>
 </body>
 </html>
