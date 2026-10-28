@@ -2441,87 +2441,7 @@ if (myFavoritesOption) {
 
 if (walletOption) {
   walletOption.addEventListener("click", () => {
-    <script>
-// ===== Kaamly: Help & Support + Wallet panels =====
-// Apna support number/email yahan likhein (quotes ke andar). Khali rahne par rabta buttons nazar nahi aayenge.
-const KAAMLY_SUPPORT_WHATSAPP = "923446246927";   // jaise "923001234567" (bina + aur bina space ke)
-const KAAMLY_SUPPORT_EMAIL = "notworking529@gmail.com";   // jaise "support@example.com"
-
-function kaamlyProfilePanel(id, title, bodyHtml) {
-  const ids = ["profileBookingsPanel", "profileReviewsPanel", "profileSupportPanel", "profileWalletPanel"];
-  ids.forEach(function (pid) {
-    const el = document.getElementById(pid);
-    if (el && pid !== id) el.hidden = true;
-  });
-  let panel = document.getElementById(id);
-  if (!panel) {
-    const anchor = document.getElementById("profileSignOut");
-    if (!anchor) return;
-    panel = document.createElement("div");
-    panel.id = id;
-    panel.hidden = true;
-    panel.style.cssText = "margin-top:16px;padding:14px;border:1px solid rgba(212,175,87,.35);border-radius:18px;background:rgba(5,34,24,.88);";
-    panel.innerHTML =
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">' +
-      '<strong style="color:#f0d17b;font-size:15px;">' + title + '</strong>' +
-      '<button type="button" data-close style="border:1px solid rgba(212,175,87,.5);background:transparent;color:#e9ca76;border-radius:10px;padding:5px 12px;font-size:12px;cursor:pointer;">Close</button>' +
-      '</div><div data-body style="color:#d5e0d8;font-size:13px;line-height:1.55;"></div>';
-    anchor.insertAdjacentElement("beforebegin", panel);
-    panel.querySelector("[data-close]").addEventListener("click", function () { panel.hidden = true; });
-  }
-  panel.querySelector("[data-body]").innerHTML = bodyHtml;
-  panel.hidden = false;
-  panel.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
-function openHelpPanel() {
-  const faqs = [
-    ["Booking kaise karun?", "Explore mein service chunein, provider ke card par 'Book this provider' dabayein, form bharein aur Submit Booking Request dabayein."],
-    ["Meri booking kahan dikhti hai?", "Profile mein jaa kar My Bookings dabayein. Wahan aap ki saari bookings nazar aati hain."],
-    ["Kya Kaamly mein online payment hai?", "Abhi Kaamly mein online payment ya wallet nahi hai."],
-    ["Review kaise dun?", "Review dene ka option abhi tayyar ho raha hai. Aap ki di hui reviews Profile mein My Reviews mein nazar aati hain."],
-    ["Log out kaise karun?", "Profile kholein aur neeche Log Out dabayein."]
-  ];
-  let html = faqs.map(function (f) {
-    return '<details style="border-bottom:1px solid rgba(212,175,87,.2);padding:10px 0;">' +
-      '<summary style="cursor:pointer;color:#fff;font-weight:700;">' + f[0] + '</summary>' +
-      '<p style="margin:8px 0 0;">' + f[1] + '</p></details>';
-  }).join("");
-
-  const btn = "display:inline-block;margin:12px 8px 0 0;padding:10px 16px;border-radius:12px;background:linear-gradient(135deg,#f0d17b,#c9a04a);color:#1a2a1f;font-weight:700;font-size:13px;text-decoration:none;";
-  let contact = "";
-  if (KAAMLY_SUPPORT_WHATSAPP) {
-    const msg = encodeURIComponent("Assalam o Alaikum, mujhe Kaamly ke baare mein madad chahiye.");
-    contact += '<a style="' + btn + '" href="https://wa.me/' + KAAMLY_SUPPORT_WHATSAPP + '?text=' + msg + '" target="_blank" rel="noopener">WhatsApp par rabta</a>';
-  }
-  if (KAAMLY_SUPPORT_EMAIL) {
-    contact += '<a style="' + btn + '" href="mailto:' + KAAMLY_SUPPORT_EMAIL + '?subject=Kaamly%20Support">Email bhejein</a>';
-  }
-  if (!contact) contact = '<p style="margin:12px 0 0;color:#a9c4b5;">Support ka rabta number abhi set nahi hua.</p>';
-  html += '<div>' + contact + '</div>';
-  kaamlyProfilePanel("profileSupportPanel", "Help & Support", html);
-}
-
-function openWalletPanel() {
-  kaamlyProfilePanel("profileWalletPanel", "Wallet & Payments",
-    '<p style="margin:0 0 8px;color:#fff;font-weight:700;">Abhi Kaamly mein online payment ya wallet nahi hai.</p>' +
-    '<p style="margin:0;">Is liye yahan koi balance ya transaction nahi dikhaya ja raha. Payment system jorne ke baad hi yahan balance aur transactions nazar aayenge.</p>');
-}
-
-(function () {
-  const helpOption = document.getElementById("helpSupportOption");
-  if (helpOption) helpOption.addEventListener("click", openHelpPanel);
-  ["myBookingsOption", "myReviewsOption"].forEach(function (oid) {
-    const b = document.getElementById(oid);
-    if (b) b.addEventListener("click", function () {
-      ["profileSupportPanel", "profileWalletPanel"].forEach(function (pid) {
-        const p = document.getElementById(pid);
-        if (p) p.hidden = true;
-      });
-    });
-  });
-})();
-</script>
+  
   });
 }
 
@@ -2643,6 +2563,86 @@ async function loadMyReviews() {
 // Apna support number/email yahan likhein (quotes ke andar). Khali rahne par rabta buttons nazar nahi aayenge.
 const KAAMLY_SUPPORT_WHATSAPP = "";   // jaise "923001234567" (bina + aur bina space ke)
 const KAAMLY_SUPPORT_EMAIL = "";      // jaise "support@example.com"
+
+function kaamlyProfilePanel(id, title, bodyHtml) {
+  const ids = ["profileBookingsPanel", "profileReviewsPanel", "profileSupportPanel", "profileWalletPanel"];
+  ids.forEach(function (pid) {
+    const el = document.getElementById(pid);
+    if (el && pid !== id) el.hidden = true;
+  });
+  let panel = document.getElementById(id);
+  if (!panel) {
+    const anchor = document.getElementById("profileSignOut");
+    if (!anchor) return;
+    panel = document.createElement("div");
+    panel.id = id;
+    panel.hidden = true;
+    panel.style.cssText = "margin-top:16px;padding:14px;border:1px solid rgba(212,175,87,.35);border-radius:18px;background:rgba(5,34,24,.88);";
+    panel.innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">' +
+      '<strong style="color:#f0d17b;font-size:15px;">' + title + '</strong>' +
+      '<button type="button" data-close style="border:1px solid rgba(212,175,87,.5);background:transparent;color:#e9ca76;border-radius:10px;padding:5px 12px;font-size:12px;cursor:pointer;">Close</button>' +
+      '</div><div data-body style="color:#d5e0d8;font-size:13px;line-height:1.55;"></div>';
+    anchor.insertAdjacentElement("beforebegin", panel);
+    panel.querySelector("[data-close]").addEventListener("click", function () { panel.hidden = true; });
+  }
+  panel.querySelector("[data-body]").innerHTML = bodyHtml;
+  panel.hidden = false;
+  panel.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function openHelpPanel() {
+  const faqs = [
+    ["Booking kaise karun?", "Explore mein service chunein, provider ke card par 'Book this provider' dabayein, form bharein aur Submit Booking Request dabayein."],
+    ["Meri booking kahan dikhti hai?", "Profile mein jaa kar My Bookings dabayein. Wahan aap ki saari bookings nazar aati hain."],
+    ["Kya Kaamly mein online payment hai?", "Abhi Kaamly mein online payment ya wallet nahi hai."],
+    ["Review kaise dun?", "Review dene ka option abhi tayyar ho raha hai. Aap ki di hui reviews Profile mein My Reviews mein nazar aati hain."],
+    ["Log out kaise karun?", "Profile kholein aur neeche Log Out dabayein."]
+  ];
+  let html = faqs.map(function (f) {
+    return '<details style="border-bottom:1px solid rgba(212,175,87,.2);padding:10px 0;">' +
+      '<summary style="cursor:pointer;color:#fff;font-weight:700;">' + f[0] + '</summary>' +
+      '<p style="margin:8px 0 0;">' + f[1] + '</p></details>';
+  }).join("");
+
+  const btn = "display:inline-block;margin:12px 8px 0 0;padding:10px 16px;border-radius:12px;background:linear-gradient(135deg,#f0d17b,#c9a04a);color:#1a2a1f;font-weight:700;font-size:13px;text-decoration:none;";
+  let contact = "";
+  if (KAAMLY_SUPPORT_WHATSAPP) {
+    const msg = encodeURIComponent("Assalam o Alaikum, mujhe Kaamly ke baare mein madad chahiye.");
+    contact += '<a style="' + btn + '" href="https://wa.me/' + KAAMLY_SUPPORT_WHATSAPP + '?text=' + msg + '" target="_blank" rel="noopener">WhatsApp par rabta</a>';
+  }
+  if (KAAMLY_SUPPORT_EMAIL) {
+    contact += '<a style="' + btn + '" href="mailto:' + KAAMLY_SUPPORT_EMAIL + '?subject=Kaamly%20Support">Email bhejein</a>';
+  }
+  if (!contact) contact = '<p style="margin:12px 0 0;color:#a9c4b5;">Support ka rabta number abhi set nahi hua.</p>';
+  html += '<div>' + contact + '</div>';
+  kaamlyProfilePanel("profileSupportPanel", "Help & Support", html);
+}
+
+function openWalletPanel() {
+  kaamlyProfilePanel("profileWalletPanel", "Wallet & Payments",
+    '<p style="margin:0 0 8px;color:#fff;font-weight:700;">Abhi Kaamly mein online payment ya wallet nahi hai.</p>' +
+    '<p style="margin:0;">Is liye yahan koi balance ya transaction nahi dikhaya ja raha. Payment system jorne ke baad hi yahan balance aur transactions nazar aayenge.</p>');
+}
+
+(function () {
+  const helpOption = document.getElementById("helpSupportOption");
+  if (helpOption) helpOption.addEventListener("click", openHelpPanel);
+  ["myBookingsOption", "myReviewsOption"].forEach(function (oid) {
+    const b = document.getElementById(oid);
+    if (b) b.addEventListener("click", function () {
+      ["profileSupportPanel", "profileWalletPanel"].forEach(function (pid) {
+        const p = document.getElementById(pid);
+        if (p) p.hidden = true;
+      });
+    });
+  });
+})();
+</script>
+  <script>
+// ===== Kaamly: Help & Support + Wallet panels =====
+const KAAMLY_SUPPORT_WHATSAPP = "923446246927";
+const KAAMLY_SUPPORT_EMAIL = "notworking529@gmail.com";
 
 function kaamlyProfilePanel(id, title, bodyHtml) {
   const ids = ["profileBookingsPanel", "profileReviewsPanel", "profileSupportPanel", "profileWalletPanel"];
