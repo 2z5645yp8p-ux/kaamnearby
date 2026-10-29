@@ -481,6 +481,21 @@ header .brand-mark {
 #settingsOption > span:first-child svg { display: none; }
 #settingsOption > span:first-child::before { content: ""; width: 24px; height: 24px; background-color: currentColor; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3Cpath d='M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3Cpath d='M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z'/%3E%3C/svg%3E") center / contain no-repeat; }
 </style>
+  <style>
+/* Kaamly category listing: row cards (Screen #4) */
+#providerCards .service-card { display: grid !important; grid-template-columns: 56px minmax(0, 1fr) auto; column-gap: 12px; row-gap: 4px; align-items: start; min-height: 0 !important; padding: 14px !important; border-radius: 18px !important; }
+#providerCards .service-card .card-top { display: contents; }
+#providerCards .service-card .demo-tag { display: none !important; }
+#providerCards .service-card .service-icon { grid-column: 1; grid-row: 1 / span 3; width: 56px; height: 56px; border-radius: 50% !important; font-size: 1.35rem; font-weight: 800; color: #e8c66b !important; background: linear-gradient(145deg, #0e4a38, #06301f) !important; border: 1.5px solid #dcb559 !important; }
+#providerCards .service-card h3 { grid-column: 2; grid-row: 1; margin: 0 !important; font-size: 1.02rem; line-height: 1.25; }
+#providerCards .service-card .kfav-btn { grid-column: 3; grid-row: 1; align-self: start !important; justify-self: end; width: 36px; height: 36px; padding: 0 !important; margin: 0 !important; justify-content: center; border-radius: 50% !important; }
+#providerCards .service-card .kfav-btn span { display: none; }
+#providerCards .service-card .klist-rating { grid-column: 2 / 4; grid-row: 2; font-size: .83rem; color: #5c6f63; }
+#providerCards .service-card .service-price { grid-column: 2 / 4; grid-row: 3; margin: 0 !important; font-size: .8rem; color: #6d7f73; }
+#providerCards .service-card .service-desc { grid-column: 1 / -1; margin: 8px 0 0 !important; font-size: .86rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+#providerCards .service-card .location { grid-column: 1 / -1; display: flex; align-items: center; gap: 6px; margin: 8px 0 0 !important; padding: 9px 12px !important; border-radius: 12px; background: #f0f4f0; font-size: .82rem; }
+#providerCards .service-card .card-btn { grid-column: 1 / -1; margin-top: 10px; padding: 10px !important; }
+</style>
 </head>
 <body class="auth-locked">
   <div id="splashScreen" role="img" aria-label="Kaamly — Har Kaam, Ab Asaan loading screen">
@@ -3166,6 +3181,91 @@ async function openSettingsPanel() {
       if (event === "SIGNED_OUT") setTimeout(function () { favSet = new Set(); decorate(); }, 0);
       else if (event === "SIGNED_IN" || event === "INITIAL_SESSION") setTimeout(loadFavorites, 0);
     });
+  }
+})();
+</script>
+  <script>
+// ===== Kaamly: category listing look (avatar letter, real rating, pin icon) =====
+(function () {
+  const PIN = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>';
+  const ratingCache = {};
+  let fetching = false;
+
+  function esc(v) {
+    return String(v == null ? "" : v).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[c];
+    });
+  }
+
+  function ratingHtml(info) {
+    if (!info || info.unknown) return "";
+    if (!info.count) return "No reviews yet";
+    return '<span style="color:#c9a04a;">&#9733;</span> ' + info.avg.toFixed(1) + " (" + info.count + (info.count === 1 ? " review)" : " reviews)");
+  }
+
+  async function fetchRatings(ids) {
+    if (!supabaseClient || fetching) return;
+    fetching = true;
+    try {
+      const { data, error } = await supabaseClient.from("provider_reviews").select("provider_id, rating").in("provider_id", ids);
+      if (error) throw error;
+      ids.forEach(function (id) { ratingCache[id] = { count: 0, avg: 0 }; });
+      const sums = {};
+      (data || []).forEach(function (r) {
+        if (typeof r.rating !== "number") return;
+        const s = sums[r.provider_id] || (sums[r.provider_id] = { total: 0, count: 0 });
+        s.total += r.rating;
+        s.count += 1;
+      });
+      Object.keys(sums).forEach(function (id) {
+        ratingCache[id] = { count: sums[id].count, avg: sums[id].total / sums[id].count };
+      });
+    } catch (e) {
+      console.error("Listing ratings error:", e);
+      ids.forEach(function (id) { ratingCache[id] = { unknown: true }; });
+    } finally {
+      fetching = false;
+      decorate();
+    }
+  }
+
+  function decorate() {
+    const container = document.getElementById("providerCards");
+    if (!container) return;
+    const missing = [];
+    container.querySelectorAll(".service-card").forEach(function (card) {
+      const viewBtn = card.querySelector("[data-provider-id]");
+      const pid = viewBtn ? viewBtn.dataset.providerId : "";
+      const h3 = card.querySelector("h3");
+      const icon = card.querySelector(".service-icon");
+      if (icon && h3 && !icon.dataset.kInit) {
+        icon.dataset.kInit = "1";
+        icon.textContent = (h3.textContent.trim().charAt(0) || "K").toUpperCase();
+      }
+      const loc = card.querySelector(".location");
+      if (loc && !loc.dataset.kInit) {
+        loc.dataset.kInit = "1";
+        const t = loc.textContent.replace(/^[^A-Za-z0-9]+/, "").trim();
+        loc.innerHTML = PIN + "<span>" + esc(t) + "</span>";
+      }
+      let r = card.querySelector(".klist-rating");
+      if (!r && h3) {
+        r = document.createElement("div");
+        r.className = "klist-rating";
+        h3.insertAdjacentElement("afterend", r);
+      }
+      if (r && pid) {
+        if (ratingCache[pid]) r.innerHTML = ratingHtml(ratingCache[pid]);
+        else missing.push(pid);
+      }
+    });
+    if (missing.length) fetchRatings(Array.from(new Set(missing)));
+  }
+
+  const container = document.getElementById("providerCards");
+  if (container) {
+    new MutationObserver(function () { requestAnimationFrame(decorate); }).observe(container, { childList: true });
+    decorate();
   }
 })();
 </script>
