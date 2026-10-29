@@ -2719,5 +2719,201 @@ function openWalletPanel() {
   });
 })();
 </script>
+  <script>
+// ===== Kaamly: Edit Profile (name + photo) =====
+(function () {
+  const BUCKET = "avatars";
+  let currentIdentity = { full_name: "", avatar_url: "" };
+  let pickedFile = null;
+
+  const nameEl = document.getElementById("profileDisplayName");
+  const avatarWrap = nameEl && nameEl.parentElement ? nameEl.parentElement.previousElementSibling : null;
+  const avatarCircle = avatarWrap ? avatarWrap.firstElementChild : null;
+  const headerBtn = document.getElementById("headerProfileButton");
+  const originalCircleHtml = avatarCircle ? avatarCircle.innerHTML : "";
+  const originalHeaderHtml = headerBtn ? headerBtn.innerHTML : "";
+  const PERSON_SVG = '<svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#f3d887" stroke-width="1.4"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2z"/></svg>';
+
+  function makeImg(url) {
+    const img = document.createElement("img");
+    img.alt = "Profile photo";
+    img.src = url;
+    img.style.cssText = "width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;";
+    return img;
+  }
+
+  function applyIdentity(identity) {
+    currentIdentity = { full_name: identity.full_name || "", avatar_url: identity.avatar_url || "" };
+    if (nameEl) nameEl.textContent = currentIdentity.full_name || "Welcome to Kaamly";
+    if (avatarCircle) {
+      avatarCircle.style.overflow = "hidden";
+      avatarCircle.innerHTML = originalCircleHtml;
+      if (currentIdentity.avatar_url) {
+        avatarCircle.innerHTML = "";
+        avatarCircle.appendChild(makeImg(currentIdentity.avatar_url));
+      }
+    }
+    if (headerBtn) {
+      headerBtn.style.overflow = "hidden";
+      headerBtn.innerHTML = originalHeaderHtml;
+      if (currentIdentity.avatar_url) {
+        headerBtn.innerHTML = "";
+        headerBtn.appendChild(makeImg(currentIdentity.avatar_url));
+      }
+    }
+  }
+
+  async function loadIdentity() {
+    try {
+      if (!supabaseClient) return;
+      const { data: s } = await supabaseClient.auth.getSession();
+      if (!s || !s.session) return;
+      const { data, error } = await supabaseClient
+        .from("profiles")
+        .select("full_name, avatar_url")
+        .eq("id", s.session.user.id)
+        .maybeSingle();
+      if (error) throw error;
+      applyIdentity(data || {});
+    } catch (e) {
+      console.error("Profile identity error:", e);
+    }
+  }
+
+  async function resizeToJpeg(file, size) {
+    const url = URL.createObjectURL(file);
+    try {
+      const img = await new Promise(function (resolve, reject) {
+        const i = new Image();
+        i.onload = function () { resolve(i); };
+        i.onerror = function () { reject(new Error("Yeh tasveer khul nahi saki. Doosri photo chunein.")); };
+        i.src = url;
+      });
+      const s = Math.min(img.naturalWidth, img.naturalHeight);
+      const sx = (img.naturalWidth - s) / 2;
+      const sy = (img.naturalHeight - s) / 2;
+      const out = Math.min(size, s);
+      const canvas = document.createElement("canvas");
+      canvas.width = out;
+      canvas.height = out;
+      canvas.getContext("2d").drawImage(img, sx, sy, s, s, 0, 0, out, out);
+      const blob = await new Promise(function (resolve) { canvas.toBlob(resolve, "image/jpeg", 0.85); });
+      if (!blob) throw new Error("Tasveer tayyar nahi ho saki.");
+      return blob;
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  function renderPreview(modal, url) {
+    const box = modal.querySelector("#pePreview");
+    box.innerHTML = "";
+    if (url) box.appendChild(makeImg(url));
+    else box.innerHTML = PERSON_SVG;
+  }
+
+  function buildModal() {
+    let modal = document.getElementById("profileEditModal");
+    if (modal) return modal;
+    modal = document.createElement("div");
+    modal.id = "profileEditModal";
+    modal.hidden = true;
+    modal.style.cssText = "position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.65);";
+    modal.innerHTML =
+      '<div style="width:100%;max-width:400px;max-height:90vh;overflow:auto;padding:20px;border:1px solid rgba(212,175,87,.55);border-radius:22px;background:linear-gradient(145deg,#0e4a38,#052a20);color:#fff;box-shadow:0 20px 50px rgba(0,0,0,.5);">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">' +
+      '<strong style="font-size:17px;color:#f0d17b;">Edit Profile</strong>' +
+      '<button type="button" id="peClose" style="border:1px solid rgba(212,175,87,.5);background:transparent;color:#e9ca76;border-radius:10px;padding:5px 12px;font-size:12px;cursor:pointer;">Cancel</button></div>' +
+      '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:16px;">' +
+      '<div id="pePreview" style="width:96px;height:96px;border-radius:50%;overflow:hidden;border:2px solid #d9b85f;background:#194c37;display:flex;align-items:center;justify-content:center;"></div>' +
+      '<label for="peFile" style="cursor:pointer;color:#f0d17b;font-weight:700;font-size:13px;border:1px solid rgba(212,175,87,.5);border-radius:12px;padding:8px 14px;">Photo chunein</label>' +
+      '<input id="peFile" type="file" accept="image/*" style="display:none;"></div>' +
+      '<label for="peName" style="display:block;font-size:12px;color:#cfe0d4;margin-bottom:6px;">Aap ka naam</label>' +
+      '<input id="peName" type="text" maxlength="60" placeholder="Apna naam likhein" style="width:100%;box-sizing:border-box;padding:12px;border-radius:12px;border:1px solid rgba(212,175,87,.5);background:#fffdf5;color:#143b2a;font-size:16px;">' +
+      '<button type="button" id="peSave" style="width:100%;margin-top:16px;padding:13px;border:0;border-radius:14px;background:linear-gradient(135deg,#f0d17b,#c9a04a);color:#1a2a1f;font-weight:800;font-size:15px;cursor:pointer;">Save</button>' +
+      '<p id="peMsg" role="status" style="margin:10px 0 0;min-height:18px;font-size:13px;color:#f3dd9a;"></p>' +
+      '</div>';
+    document.body.appendChild(modal);
+
+    const msg = modal.querySelector("#peMsg");
+    modal.querySelector("#peClose").addEventListener("click", function () { modal.hidden = true; });
+    modal.addEventListener("click", function (e) { if (e.target === modal) modal.hidden = true; });
+
+    modal.querySelector("#peFile").addEventListener("change", function (e) {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      if (f.type && f.type.indexOf("image/") !== 0) { msg.textContent = "Sirf tasveer chunein."; return; }
+      if (f.size > 20 * 1024 * 1024) { msg.textContent = "Tasveer bohat bari hai (20 MB se kam chunein)."; return; }
+      pickedFile = f;
+      msg.textContent = "";
+      renderPreview(modal, URL.createObjectURL(f));
+    });
+
+    modal.querySelector("#peSave").addEventListener("click", async function () {
+      const saveBtn = this;
+      const name = modal.querySelector("#peName").value.trim();
+      if (name.length < 2) { msg.textContent = "Naam kam az kam 2 harf ka likhein."; return; }
+      saveBtn.disabled = true;
+      msg.textContent = "Save ho raha hai...";
+      try {
+        const { data: s, error: sessionError } = await supabaseClient.auth.getSession();
+        if (sessionError || !s.session) throw new Error("Pehle sign in karein.");
+        const uid = s.session.user.id;
+        const payload = { full_name: name };
+        if (pickedFile) {
+          msg.textContent = "Photo upload ho rahi hai...";
+          const blob = await resizeToJpeg(pickedFile, 512);
+          const path = uid + "/avatar.jpg";
+          const up = await supabaseClient.storage.from(BUCKET).upload(path, blob, { contentType: "image/jpeg", upsert: true, cacheControl: "3600" });
+          if (up.error) throw up.error;
+          const pub = supabaseClient.storage.from(BUCKET).getPublicUrl(path);
+          payload.avatar_url = pub.data.publicUrl + "?v=" + Date.now();
+        }
+        msg.textContent = "Profile save ho rahi hai...";
+        const res = await supabaseClient.from("profiles").update(payload).eq("id", uid).select("full_name, avatar_url");
+        if (res.error) throw res.error;
+        if (!res.data || !res.data.length) throw new Error("Aap ki profile row nahi mili, is liye save nahi hua.");
+        applyIdentity(res.data[0]);
+        pickedFile = null;
+        msg.textContent = "Save ho gaya.";
+        setTimeout(function () { modal.hidden = true; }, 900);
+      } catch (e) {
+        console.error("Edit profile error:", e);
+        msg.textContent = (e && e.message) ? e.message : "Save nahi ho saka.";
+      } finally {
+        saveBtn.disabled = false;
+      }
+    });
+    return modal;
+  }
+
+  function openModal() {
+    const modal = buildModal();
+    pickedFile = null;
+    modal.querySelector("#peName").value = currentIdentity.full_name || "";
+    modal.querySelector("#peFile").value = "";
+    modal.querySelector("#peMsg").textContent = "";
+    renderPreview(modal, currentIdentity.avatar_url);
+    modal.hidden = false;
+  }
+
+  if (avatarWrap) {
+    avatarWrap.style.cursor = "pointer";
+    avatarWrap.setAttribute("role", "button");
+    avatarWrap.setAttribute("aria-label", "Edit profile");
+    avatarWrap.addEventListener("click", openModal);
+  }
+
+  const openProfileBtn = document.getElementById("openProfileScreen");
+  if (openProfileBtn) openProfileBtn.addEventListener("click", function () { loadIdentity(); });
+
+  if (supabaseClient && supabaseClient.auth && supabaseClient.auth.onAuthStateChange) {
+    supabaseClient.auth.onAuthStateChange(function (event) {
+      if (event === "SIGNED_OUT") setTimeout(function () { applyIdentity({}); }, 0);
+      else if (event === "SIGNED_IN" || event === "INITIAL_SESSION") setTimeout(loadIdentity, 0);
+    });
+  }
+})();
+</script>
 </body>
 </html>
