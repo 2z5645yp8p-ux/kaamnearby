@@ -2447,7 +2447,7 @@ if (walletOption) {
 
 if (settingsOption) {
   settingsOption.addEventListener("click", () => {
-    alert("Settings & Support feature abhi connect karna baqi hai.");
+    if (typeof openSettingsPanel === "function") { openSettingsPanel(); }
   });
 }
 
@@ -2913,6 +2913,78 @@ function openWalletPanel() {
       else if (event === "SIGNED_IN" || event === "INITIAL_SESSION") setTimeout(loadIdentity, 0);
     });
   }
+})();
+</script>
+  <script>
+// ===== Kaamly: Settings panel =====
+async function openSettingsPanel() {
+  if (typeof kaamlyProfilePanel !== "function") return;
+  const inputStyle = "width:100%;box-sizing:border-box;margin-top:8px;padding:11px;border-radius:12px;border:1px solid rgba(212,175,87,.5);background:#fffdf5;color:#143b2a;font-size:16px;";
+  const btnStyle = "width:100%;margin-top:10px;padding:12px;border:0;border-radius:12px;background:linear-gradient(135deg,#f0d17b,#c9a04a);color:#1a2a1f;font-weight:800;font-size:14px;cursor:pointer;";
+  const html =
+    '<div><div style="font-size:12px;color:#a9c4b5;">Email</div>' +
+    '<div id="stEmail" style="color:#fff;font-weight:700;overflow-wrap:anywhere;">...</div></div>' +
+    '<div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(212,175,87,.2);">' +
+    '<strong style="color:#f0d17b;">Password badlein</strong>' +
+    '<input id="stNewPw" type="password" autocomplete="new-password" placeholder="Naya password (kam az kam 8 harf)" style="' + inputStyle + '">' +
+    '<input id="stNewPw2" type="password" autocomplete="new-password" placeholder="Naya password dobara likhein" style="' + inputStyle + '">' +
+    '<button type="button" id="stPwBtn" style="' + btnStyle + '">Password badlein</button>' +
+    '<p id="stMsg" role="status" style="margin:8px 0 0;min-height:18px;color:#f3dd9a;"></p></div>' +
+    '<div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(212,175,87,.2);">' +
+    '<strong style="color:#f0d17b;">Sab devices se Log Out</strong>' +
+    '<p style="margin:6px 0 0;">Agar aap ka account kisi aur phone ya computer par khula reh gaya ho.</p>' +
+    '<button type="button" id="stGlobalOut" style="' + btnStyle + '">Sab jagah se Log Out</button></div>';
+  kaamlyProfilePanel("profileSettingsPanel", "Settings", html);
+  const panel = document.getElementById("profileSettingsPanel");
+  if (!panel) return;
+
+  try {
+    const { data } = await supabaseClient.auth.getSession();
+    const em = panel.querySelector("#stEmail");
+    if (em) em.textContent = (data && data.session && data.session.user.email) || "-";
+  } catch (e) { console.error("Settings email error:", e); }
+
+  const msg = panel.querySelector("#stMsg");
+
+  panel.querySelector("#stPwBtn").addEventListener("click", async function () {
+    const btn = this;
+    const pw = panel.querySelector("#stNewPw").value;
+    const pw2 = panel.querySelector("#stNewPw2").value;
+    if (pw.length < 8) { msg.textContent = "Password kam az kam 8 harf ka rakhein."; return; }
+    if (pw !== pw2) { msg.textContent = "Dono password ek jaise nahi hain."; return; }
+    btn.disabled = true;
+    msg.textContent = "Badal raha hai...";
+    try {
+      const { error } = await supabaseClient.auth.updateUser({ password: pw });
+      if (error) throw error;
+      panel.querySelector("#stNewPw").value = "";
+      panel.querySelector("#stNewPw2").value = "";
+      msg.textContent = "Password badal gaya.";
+    } catch (e) {
+      console.error("Password change error:", e);
+      msg.textContent = (e && e.message) ? e.message : "Password nahi badal saka.";
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  panel.querySelector("#stGlobalOut").addEventListener("click", async function () {
+    this.disabled = true;
+    msg.textContent = "Log out ho raha hai...";
+    try { await supabaseClient.auth.signOut({ scope: "global" }); } catch (e) { console.error("Global signout error:", e); }
+    location.reload();
+  });
+}
+
+// Doosre options dabane par Settings panel band ho jaye
+(function () {
+  ["myBookingsOption", "myReviewsOption", "helpSupportOption", "walletOption"].forEach(function (oid) {
+    const b = document.getElementById(oid);
+    if (b) b.addEventListener("click", function () {
+      const p = document.getElementById("profileSettingsPanel");
+      if (p) p.hidden = true;
+    });
+  });
 })();
 </script>
 </body>
