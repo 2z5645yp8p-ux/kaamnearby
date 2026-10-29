@@ -2435,7 +2435,7 @@ if (myReviewsOption) {
 
 if (myFavoritesOption) {
   myFavoritesOption.addEventListener("click", () => {
-    alert("Favourites feature abhi connect karna baqi hai.");
+    if (typeof openFavoritesPanel === "function") { openFavoritesPanel(); }
   });
 }
 
@@ -2985,6 +2985,188 @@ async function openSettingsPanel() {
       if (p) p.hidden = true;
     });
   });
+})();
+</script>
+  <script>
+// ===== Kaamly: Favorites =====
+(function () {
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const HEART_OUTLINE = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>';
+  const HEART_FILLED = HEART_OUTLINE.replace('fill="none"', 'fill="currentColor"');
+  let favSet = new Set();
+
+  function esc(v) {
+    return String(v == null ? "" : v).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[c];
+    });
+  }
+
+  async function getUid() {
+    if (!supabaseClient) return null;
+    const { data } = await supabaseClient.auth.getSession();
+    return data && data.session ? data.session.user.id : null;
+  }
+
+  function canFavorite() {
+    return typeof currentAccountRole === "undefined" || !currentAccountRole || currentAccountRole === "customer";
+  }
+
+  function panelEl() { return document.getElementById("profileFavoritesPanel"); }
+  function panelOpen() { const p = panelEl(); return !!p && !p.hidden; }
+
+  function decorate() {
+    const container = document.getElementById("providerCards");
+    if (!container) return;
+    container.querySelectorAll(".service-card").forEach(function (card) {
+      const viewBtn = card.querySelector("[data-provider-id]");
+      let btn = card.querySelector(".kfav-btn");
+      if (!viewBtn || !canFavorite()) { if (btn) btn.remove(); return; }
+      const pid = viewBtn.dataset.providerId;
+      if (!UUID_RE.test(pid)) return;
+      if (!btn) {
+        btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "kfav-btn";
+        btn.style.cssText = "align-self:flex-start;display:inline-flex;align-items:center;gap:6px;margin:0 0 10px;padding:7px 12px;border-radius:999px;border:1px solid #cfe3d6;background:#fff;color:#116747;font-size:13px;font-weight:700;cursor:pointer;";
+        viewBtn.insertAdjacentElement("beforebegin", btn);
+      }
+      btn.dataset.favId = pid;
+      const on = favSet.has(pid);
+      btn.innerHTML = (on ? HEART_FILLED : HEART_OUTLINE) + "<span>" + (on ? "Saved" : "Save") + "</span>";
+      btn.style.background = on ? "#fdf3d8" : "#fff";
+      btn.style.borderColor = on ? "#e0bd60" : "#cfe3d6";
+      btn.style.color = on ? "#8a6a14" : "#116747";
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  async function loadFavorites() {
+    try {
+      const uid = await getUid();
+      if (!uid) { favSet = new Set(); decorate(); return; }
+      const { data, error } = await supabaseClient.from("favorites").select("provider_id").eq("customer_id", uid);
+      if (error) throw error;
+      favSet = new Set((data || []).map(function (r) { return r.provider_id; }));
+      decorate();
+    } catch (e) {
+      console.error("Favorites load error:", e);
+    }
+  }
+
+  async function renderFavoritesList() {
+    const panel = panelEl();
+    if (!panel) return;
+    const body = panel.querySelector("[data-body]");
+    try {
+      const uid = await getUid();
+      if (!uid) throw new Error("Pehle sign in karein.");
+      const { data: favs, error } = await supabaseClient
+        .from("favorites").select("provider_id, created_at")
+        .eq("customer_id", uid).order("created_at", { ascending: false });
+      if (error) throw error;
+      if (!favs || !favs.length) {
+        body.innerHTML = '<p style="margin:0;">Abhi aap ki koi favorite nahi hai. Provider ke card par Save dabayein.</p>';
+        return;
+      }
+      const ids = favs.map(function (r) { return r.provider_id; });
+      const { data: provs } = await supabaseClient.from("providers").select("id, name, service_type, area").in("id", ids);
+      const map = {};
+      (provs || []).forEach(function (p) { map[p.id] = p; });
+      body.innerHTML = favs.map(function (r) {
+        const p = map[r.provider_id];
+        const name = p ? p.name : "Provider (abhi dastiyab nahi)";
+        const meta = p ? [p.service_type, p.area].filter(Boolean).join(" · ") : "";
+        return '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(212,175,87,.2);">' +
+          '<div style="min-width:0;"><strong style="color:#fff;">' + esc(name) + '</strong>' +
+          (meta ? '<div style="font-size:12px;color:#a9c4b5;">' + esc(meta) + '</div>' : '') + '</div>' +
+          '<button type="button" data-unfav="' + esc(r.provider_id) + '" style="flex:none;border:1px solid rgba(212,175,87,.5);background:transparent;color:#e9ca76;border-radius:10px;padding:6px 12px;font-size:12px;cursor:pointer;">Hataein</button></div>';
+      }).join("");
+    } catch (e) {
+      console.error("Favorites list error:", e);
+      body.textContent = (e && e.message) ? e.message : "Favorites load nahi ho sakin.";
+    }
+  }
+
+  async function toggleFavorite(pid, btn) {
+    btn.disabled = true;
+    try {
+      const uid = await getUid();
+      if (!uid) throw new Error("Pehle sign in karein.");
+      if (favSet.has(pid)) {
+        const { error } = await supabaseClient.from("favorites").delete().eq("customer_id", uid).eq("provider_id", pid);
+        if (error) throw error;
+        favSet.delete(pid);
+      } else {
+        const { error } = await supabaseClient.from("favorites").insert({ customer_id: uid, provider_id: pid });
+        if (error && error.code !== "23505") throw error;
+        favSet.add(pid);
+      }
+      decorate();
+      if (panelOpen()) renderFavoritesList();
+    } catch (e) {
+      console.error("Favorite toggle error:", e);
+      alert("Favorite save nahi ho saka: " + ((e && e.message) || "koi masla aaya."));
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  window.openFavoritesPanel = async function () {
+    if (typeof kaamlyProfilePanel !== "function") return;
+    const settings = document.getElementById("profileSettingsPanel");
+    if (settings) settings.hidden = true;
+    kaamlyProfilePanel("profileFavoritesPanel", "Favorites", '<p style="margin:0;">Loading...</p>');
+    const panel = panelEl();
+    if (panel && !panel.dataset.favBound) {
+      panel.dataset.favBound = "1";
+      panel.addEventListener("click", async function (e) {
+        const b = e.target.closest("[data-unfav]");
+        if (!b) return;
+        b.disabled = true;
+        const pid = b.getAttribute("data-unfav");
+        try {
+          const uid = await getUid();
+          if (!uid) throw new Error("Pehle sign in karein.");
+          const { error } = await supabaseClient.from("favorites").delete().eq("customer_id", uid).eq("provider_id", pid);
+          if (error) throw error;
+          favSet.delete(pid);
+          decorate();
+          renderFavoritesList();
+        } catch (err) {
+          console.error("Unfavorite error:", err);
+          b.disabled = false;
+          alert("Hata nahi saka: " + ((err && err.message) || "koi masla aaya."));
+        }
+      });
+    }
+    renderFavoritesList();
+  };
+
+  // Doosre options dabane par Favorites panel band ho jaye
+  ["myBookingsOption", "myReviewsOption", "helpSupportOption", "walletOption", "settingsOption"].forEach(function (oid) {
+    const b = document.getElementById(oid);
+    if (b) b.addEventListener("click", function () { const p = panelEl(); if (p) p.hidden = true; });
+  });
+
+  // Provider cards par Save button
+  const container = document.getElementById("providerCards");
+  if (container) {
+    new MutationObserver(function () { requestAnimationFrame(decorate); }).observe(container, { childList: true });
+    container.addEventListener("click", function (e) {
+      const b = e.target.closest(".kfav-btn");
+      if (!b) return;
+      const pid = b.dataset.favId;
+      if (pid) toggleFavorite(pid, b);
+    });
+    decorate();
+  }
+
+  if (supabaseClient && supabaseClient.auth && supabaseClient.auth.onAuthStateChange) {
+    supabaseClient.auth.onAuthStateChange(function (event) {
+      if (event === "SIGNED_OUT") setTimeout(function () { favSet = new Set(); decorate(); }, 0);
+      else if (event === "SIGNED_IN" || event === "INITIAL_SESSION") setTimeout(loadFavorites, 0);
+    });
+  }
 })();
 </script>
 </body>
